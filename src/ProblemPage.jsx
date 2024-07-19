@@ -90,24 +90,33 @@ const ProblemPage = () => {
         <div className="solution-column resizable">
           <Card className="h-100">
             <Card.Body>
-              <Card.Title>Your Solution</Card.Title>
+              <div className="solution-header">
+                <Card.Title>Your Solution</Card.Title>
+                <Button variant="primary" onClick={handleSubmit} className="submit-button">Submit Code</Button>
+              </div>
               <div className="editor-container">
                 <Editor
                   height="calc(100vh - 200px)"
                   defaultLanguage="python"
                   defaultValue={code}
+                  // theme='vs-dark'
                   onChange={(value) => setCode(value)}
                 />
               </div>
-              <Button variant="primary" onClick={handleSubmit} className="mt-2">Submit Code</Button>
-              {errorMessage && <ErrorResult message={errorMessage} />}
-              {testResults.map((result, index) => (
-                <TestCaseResult key={index}
-                  input={result.input}
-                  output={result.output}
-                  expected={result.expected}
-                  success={result.success} />
-              ))}
+              {(errorMessage || testResults.length > 0) && (
+                <div className="overlay-container">
+                  {errorMessage && <ErrorResult message={errorMessage} />}
+                  {testResults.length > 0 && testResults.map((result, index) => (
+                    <TestCaseResult
+                      key={index}
+                      input={result.input}
+                      output={result.output}
+                      expected={result.expected}
+                      success={result.success}
+                    />
+                  ))}
+                </div>
+              )}
             </Card.Body>
           </Card>
         </div>
