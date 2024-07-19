@@ -1,0 +1,30 @@
+.problems-list-container {
+    padding: 20px;
+}
+
+.problems-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.problems-header,
+.problem-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+}
+
+.problems-header {
+    font-weight: bold;
+}
+
+.problem-row {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.problem-row:hover {
+    background-color: #f1f1f1;
+}
