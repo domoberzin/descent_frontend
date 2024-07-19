@@ -35,6 +35,7 @@ const ProblemPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          questionId: String(id),
           code: code,
           language: 'python',
         }),
