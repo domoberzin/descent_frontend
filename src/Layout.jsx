@@ -1,11 +1,12 @@
 // Layout.js
 import React from 'react';
 import NavBar from './NavBar';
+import Login from './Login';
 
 const Layout = ({ children }) => {
   return (
     <div>
-      <NavBar />
+      <NavBar/>
       <div className="p-1">
         {children}
       </div>
