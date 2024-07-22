@@ -4,9 +4,11 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Layout from './Layout';
 import ProblemsList from './ProblemsList';
 import ProblemPage from './ProblemPage';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const App = () => {
   return (
+    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
     <div className="bg-gray-800 min-h-screen text-white">
       <Router>
         <Layout>
@@ -17,6 +19,7 @@ const App = () => {
         </Layout>
       </Router>
     </div>
+    </GoogleOAuthProvider>
   );
 };
 

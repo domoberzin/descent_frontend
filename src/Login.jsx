@@ -1,11 +1,22 @@
 import React from 'react';
+import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const Login = ({ isModalOpen, toggleModal }) => {
+  const login = useGoogleLogin({
+    onSuccess: credentialResponse => {
+      console.log(credentialResponse);
+      // Here you would typically send the access token to your backend
+      // to verify and create a session for the user
+    },
+    onError: () => {
+      console.log('Login Failed');
+    }
+  });
+
   return (
     <div>
       <button 
-        data-modal-target="default-modal" 
-        data-modal-toggle="default-modal" 
         className="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" 
         type="button"
         onClick={toggleModal}
@@ -14,9 +25,6 @@ const Login = ({ isModalOpen, toggleModal }) => {
       </button>
 
       <div 
-        id="default-modal" 
-        tabIndex="-1" 
-        aria-hidden="true" 
         className={`fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center w-full h-full ${isModalOpen ? 'flex' : 'hidden'} overflow-y-auto overflow-x-hidden bg-black bg-opacity-50`}
       >
         <div className="relative p-4 w-full max-w-2xl max-h-full">
@@ -28,7 +36,6 @@ const Login = ({ isModalOpen, toggleModal }) => {
               <button 
                 type="button" 
                 className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" 
-                data-modal-hide="default-modal" 
                 onClick={toggleModal}
               >
                 <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -38,45 +45,15 @@ const Login = ({ isModalOpen, toggleModal }) => {
               </button>
             </div>
             <div className="p-4 md:p-5 space-y-4">
-              <form className="max-w-sm mx-auto">
-                <div className="mb-5">
-                  <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-                  <input 
-                    type="email" 
-                    id="email" 
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                    placeholder="name@flowbite.com" 
-                    required 
-                  />
-                </div>
-                <div className="mb-5">
-                  <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
-                  <input 
-                    type="password" 
-                    id="password" 
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                    required 
-                  />
-                </div>
-                <div className="flex items-start mb-5">
-                  <div className="flex items-center h-5">
-                    <input 
-                      id="remember" 
-                      type="checkbox" 
-                      value="" 
-                      className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" 
-                      required 
-                    />
-                  </div>
-                  <label htmlFor="remember" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember me</label>
-                </div>
-                <button 
-                  type="submit" 
-                  className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              <div className="flex justify-center">
+                <button
+                  onClick={() => login()}
+                  className="px-4 py-2 border flex gap-2 border-slate-200 rounded-lg text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:shadow transition duration-150"
                 >
-                  Submit
+                  <img className="w-6 h-6" src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" alt="google logo" />
+                  <span>Login with Google</span>
                 </button>
-              </form>
+              </div>
             </div>
           </div>
         </div>
