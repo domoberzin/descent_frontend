@@ -105,7 +105,7 @@ const ProblemPage = () => {
               </div>
               {(errorMessage || testResults.length > 0) && (
                 <div className="overlay-container">
-                  {errorMessage && <ErrorResult message={errorMessage} />}
+                  {errorMessage && <ErrorResult message={errorMessage.message} type={errorMessage.type} traceback={errorMessage.traceback} />}
                   {testResults.length > 0 && testResults.map((result, index) => (
                     <TestCaseResult
                       key={index}
