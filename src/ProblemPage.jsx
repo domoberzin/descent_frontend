@@ -15,12 +15,15 @@ const ProblemPage = () => {
   const [code, setCode] = useState(`def solution(a, b): return a + b`);
   const [testResults, setTestResults] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [solution, setSolution] = useState('');
+  const [showSolution, setShowSolution] = useState(false);
 
   useEffect(() => {
     axios.get(`http://localhost:3000/v1/questions/${id}`)
       .then(response => {
         setProblem(response.data);
         setCode(response.data.boilerplate); // Set the boilerplate code from the fetched data
+        setSolution(response.data.solution);
       })
       .catch(error => {
         console.error('There was an error fetching the problem!', error);
@@ -61,6 +64,10 @@ const ProblemPage = () => {
     }
   };
 
+  const toggleSolution = () => {
+    setShowSolution(prevShowSolution => !prevShowSolution);
+  };
+
   if (!problem) {
     return <div>Loading...</div>;
   }
@@ -77,21 +84,35 @@ const ProblemPage = () => {
         direction="horizontal"
         cursor="col-resize"
       >
-        <div className="problem-column">
+        <div className="problem-column" style={{ minWidth: '300px' }}>
           <Card className="h-100">
             <Card.Body>
-              <Card.Title>{problem.title}</Card.Title>
-              <Card.Text>{problem.description}</Card.Text>
-              <Button variant="primary">Learn</Button>
-              <Button variant="secondary" className="ml-2">Show Solution</Button>
+              <Card.Title className="mb-3">{problem.title}</Card.Title>
+              <Card.Text className="mb-3">{problem.description}</Card.Text>
+              <div className="buttons-container mt-3">
+                <Button variant="primary" className="mr-2">Learn</Button>
+                <Button variant="secondary" onClick={toggleSolution}>
+                  {showSolution ? 'Hide Solution' : 'Show Solution'}
+                </Button>
+              </div>
+              {showSolution && (
+                <div className="solution-container mt-3">
+                  <Card>
+                    <Card.Body>
+                      <Card.Title>Solution</Card.Title>
+                      <pre>{solution}</pre>
+                    </Card.Body>
+                  </Card>
+                </div>
+              )}
             </Card.Body>
           </Card>
         </div>
-        <div className="solution-column resizable">
+        <div className="solution-column resizable" style={{ minWidth: '400px' }}>
           <Card className="h-100">
-            <Card.Body>
+            <Card.Body className="d-flex flex-column">
               <div className="solution-header">
-                <Card.Title>Your Solution</Card.Title>
+                <Card.Title className="mb-0">Your Solution</Card.Title>
                 <Button variant="primary" onClick={handleSubmit} className="submit-button">Submit Code</Button>
               </div>
               <div className="editor-container">
@@ -99,7 +120,6 @@ const ProblemPage = () => {
                   height="calc(100vh - 200px)"
                   defaultLanguage="python"
                   defaultValue={code}
-                  // theme='vs-dark'
                   onChange={(value) => setCode(value)}
                 />
               </div>
