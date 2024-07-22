@@ -179,33 +179,47 @@ export default function ProblemsList() {
             </tr>
           </thead>
           <tbody>
-            {filteredProblems.map((problem, index) => (
-              <tr
-                key={index}
-                className="border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-              >
-                <th
-                  scope="row"
-                  className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
-                >
-                  <a
-                    href={`/problem/${problem.id}`}
-                    className="block text-sm text-blue-600 dark:text-blue-400"
+            {filteredProblems.map((problem, index) => {
+              let problemTopic = problem.topic.toLowerCase();
+              problemTopic =
+                problemTopic.charAt(0).toUpperCase() + problemTopic.slice(1);
+              let problemDifficulty = problem.difficulty.toLowerCase();
+              problemDifficulty =
+                problemDifficulty.charAt(0).toUpperCase() +
+                problemDifficulty.slice(1);
+              const colourMap = {
+                Hard: "text-red-500",
+                Medium: "text-yellow-500",
+                Easy: "text-green-500",
+              };
+
+              return (
+                <tr key={index} className="border-b ">
+                  <th
+                    scope="row"
+                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
                   >
-                    {problem.title}
-                  </a>
-                </th>
-                <td className="px-6 py-4">{problem.topic}</td>
-                <td className="px-6 py-4">{problem.difficulty}</td>
-                <td className="px-6 py-4">
-                  <input
-                    type="checkbox"
-                    checked={problem.status === "completed"}
-                    readOnly
-                  />
-                </td>
-              </tr>
-            ))}
+                    <a
+                      href={`/problem/${problem.id}`}
+                      className="block text-sm text-blue-400 hover:text-blue-600"
+                    >
+                      {problem.title}
+                    </a>
+                  </th>
+                  <td className="px-6 py-4">{problemTopic}</td>
+                  <td className={`px-6 py-4 ${colourMap[problemDifficulty]}`}>
+                    {problemDifficulty}
+                  </td>
+                  <td className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={problem.status === "completed"}
+                      readOnly
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
