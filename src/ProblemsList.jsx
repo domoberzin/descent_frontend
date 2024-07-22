@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from './config';
 import { Link } from "react-router-dom";
 // import './ProblemsList.css';
 import {
@@ -29,7 +30,7 @@ function ProblemsList() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/v1/questions")
+      .get(`${API_URL}/v1/questions`)
       .then((response) => {
         setProblems(response.data);
       })

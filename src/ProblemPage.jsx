@@ -1,3 +1,4 @@
+// ProblemPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -10,6 +11,7 @@ import './ProblemPage.css';
 import TestCaseResult from './components/TestCaseResult';
 import ErrorResult from './components/ErrorResult';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { API_URL } from './config';
 
 const ProblemPage = () => {
   const { id } = useParams();
@@ -22,7 +24,7 @@ const ProblemPage = () => {
   const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/v1/questions/${id}`)
+    axios.get(`${API_URL}/v1/questions/${id}`)
       .then(response => {
         setProblem(response.data);
         setCode(response.data.boilerplate); // Set the boilerplate code from the fetched data
@@ -35,7 +37,7 @@ const ProblemPage = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch('http://localhost:3000/v1/submit/', {
+      const response = await fetch(`${API_URL}/v1/submit/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
