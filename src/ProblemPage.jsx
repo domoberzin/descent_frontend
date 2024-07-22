@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Container, Button, Card } from 'react-bootstrap';
 import Split from 'react-split';
 import Editor from '@monaco-editor/react';
+import { FaCopy, FaCheck } from 'react-icons/fa';
+import SolutionComponent from './components/Solution';
 import './ProblemPage.css';
 import TestCaseResult from './components/TestCaseResult';
 import ErrorResult from './components/ErrorResult';
@@ -17,6 +19,7 @@ const ProblemPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [solution, setSolution] = useState('');
   const [showSolution, setShowSolution] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
     axios.get(`http://localhost:3000/v1/questions/${id}`)
@@ -68,6 +71,17 @@ const ProblemPage = () => {
     setShowSolution(prevShowSolution => !prevShowSolution);
   };
 
+  const copyToClipboard = (text, setCopied) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Reset the icon after 2 seconds
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+  };
+
   if (!problem) {
     return <div>Loading...</div>;
   }
@@ -97,12 +111,7 @@ const ProblemPage = () => {
               </div>
               {showSolution && (
                 <div className="solution-container mt-3">
-                  <Card>
-                    <Card.Body>
-                      <Card.Title>Solution</Card.Title>
-                      <pre>{solution}</pre>
-                    </Card.Body>
-                  </Card>
+                  <SolutionComponent solution={solution} />
                 </div>
               )}
             </Card.Body>
@@ -111,9 +120,17 @@ const ProblemPage = () => {
         <div className="solution-column resizable" style={{ minWidth: '400px' }}>
           <Card className="h-100">
             <Card.Body className="d-flex flex-column">
-              <div className="solution-header">
+              <div className="solution-header d-flex justify-content-between align-items-center">
                 <Card.Title className="mb-0">Your Solution</Card.Title>
-                <Button variant="primary" onClick={handleSubmit} className="submit-button">Submit Code</Button>
+                <div>
+                  <Button variant="primary" onClick={handleSubmit} className="submit-button mr-2">Submit Code</Button>
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => copyToClipboard(code, setCodeCopied)}
+                  >
+                    {codeCopied ? <FaCheck /> : <FaCopy />}
+                  </Button>
+                </div>
               </div>
               <div className="editor-container">
                 <Editor
