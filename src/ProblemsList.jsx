@@ -4,15 +4,18 @@ import { API_URL } from "./config";
 
 export default function ProblemsList() {
   const [problems, setProblems] = useState([]);
-  const [difficulty, setDifficulty] = useState("all");
-  const [category, setCategory] = useState("all");
+  const [filteredProblems, setFilteredProblems] = useState([]);
   const [status, setStatus] = useState({
     completed: false,
     notCompleted: false,
   });
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortTopic, setSortTopic] = useState("All Topics");
+  const [sortDifficulty, setSortDifficulty] = useState("All Difficulties");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     axios
       // .get(`${API_URL}/v1/questions`)
       .get("https://35.198.254.147/v1/questions")
@@ -22,11 +25,37 @@ export default function ProblemsList() {
       .catch((error) => {
         console.error("There was an error fetching the problems!", error);
       });
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    const filtered = problems
+      .filter(
+        (problem) =>
+          problem.title
+            ?.toLowerCase()
+            .includes(searchTerm?.toLowerCase() ?? "") ||
+          problem.description
+            ?.toLowerCase()
+            .includes(searchTerm?.toLowerCase() ?? "")
+      )
+      .filter(
+        (problem) =>
+          (sortTopic === "All Topics" ||
+            problem.topic.toLowerCase() === sortTopic.toLowerCase()) &&
+          (sortDifficulty === "All Difficulties" ||
+            problem.difficulty.toLowerCase() ===
+              sortDifficulty.toLowerCase()) &&
+          ((!status.completed && !status.notCompleted) ||
+            (status.completed && problem.status === "completed") ||
+            (status.notCompleted && problem.status !== "completed"))
+      );
+    setFilteredProblems(filtered);
+  }, [problems, searchTerm, sortTopic, sortDifficulty, status]);
 
   const topicsList = problems.map((problem) => problem.topic.toLowerCase());
   const uniqueTopics = new Set(topicsList);
-  const topicArr = [...uniqueTopics].map((topic) => {
+  const topicArr = ["All Topics", ...uniqueTopics].map((topic) => {
     return topic.charAt(0).toUpperCase() + topic.slice(1);
   });
 
@@ -34,26 +63,29 @@ export default function ProblemsList() {
     problem.difficulty.toLowerCase()
   );
   const uniqueDifficulties = new Set(difficultyList);
-  const difficultyArr = [...uniqueDifficulties].map((diff) => {
-    return diff.charAt(0).toUpperCase() + diff.slice(1);
-  });
-
-  const filteredProblems = problems.filter(
-    (problem) =>
-      problem.title?.toLowerCase().includes(searchTerm?.toLowerCase() ?? "") ||
-      (problem.description
-        ?.toLowerCase()
-        .includes(searchTerm?.toLowerCase() ?? "") &&
-        (difficulty === "all" || problem.difficulty === difficulty) &&
-        (category === "all" || problem.topic === category) &&
-        ((!status.completed && !status.notCompleted) ||
-          (status.completed && problem.status === "completed") ||
-          (status.notCompleted && problem.status !== "completed")))
+  const difficultyArr = ["All Difficulties", ...uniqueDifficulties].map(
+    (diff) => {
+      return diff.charAt(0).toUpperCase() + diff.slice(1);
+    }
   );
+
+  const handleSortTopic = (event) => {
+    const selectedTopic = event.target.innerText;
+    setSortTopic(selectedTopic);
+  };
+
+  const handleSortDifficulty = (event) => {
+    const selectedDifficulty = event.target.innerText;
+    setSortDifficulty(selectedDifficulty);
+  };
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
+
+  if (loading) {
+    return <div>Loading bruh.</div>;
+  }
 
   return (
     <div className="flex flex-col space-y-4 items-center">
@@ -66,7 +98,7 @@ export default function ProblemsList() {
           className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 rounded-s-lg hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
           type="button"
         >
-          All Topics{" "}
+          {sortTopic}
           <svg
             className="w-2.5 h-2.5 ms-2.5"
             aria-hidden="true"
@@ -95,6 +127,7 @@ export default function ProblemsList() {
               <li key={topic}>
                 <button
                   type="button"
+                  onClick={handleSortTopic}
                   className="inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                 >
                   {topic}
@@ -109,7 +142,7 @@ export default function ProblemsList() {
           className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600  dark:text-white dark:border-gray-600"
           type="button"
         >
-          All Difficulties{" "}
+          {sortDifficulty}
           <svg
             className="w-2.5 h-2.5 ms-2.5"
             aria-hidden="true"
@@ -138,6 +171,7 @@ export default function ProblemsList() {
               <li key={diff}>
                 <button
                   type="button"
+                  onClick={handleSortDifficulty}
                   className="inline-flex w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                 >
                   {diff}
@@ -188,9 +222,9 @@ export default function ProblemsList() {
                 problemDifficulty.charAt(0).toUpperCase() +
                 problemDifficulty.slice(1);
               const colourMap = {
-                Hard: "text-red-500",
-                Medium: "text-yellow-500",
-                Easy: "text-green-500",
+                Hard: "text-red-400",
+                Medium: "text-yellow-400",
+                Easy: "text-green-400",
               };
 
               return (
@@ -207,9 +241,12 @@ export default function ProblemsList() {
                     </a>
                   </th>
                   <td className="px-6 py-4">{problemTopic}</td>
-                  <td className={`px-6 py-4 ${colourMap[problemDifficulty]}`}>
-                    {problemDifficulty}
+                  <td className="px-6 py-4">
+                    <span className={`${colourMap[problemDifficulty]}`}>
+                      {problemDifficulty}
+                    </span>
                   </td>
+
                   <td className="px-6 py-4">
                     <input
                       type="checkbox"
