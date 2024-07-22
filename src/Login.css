@@ -1,69 +1,35 @@
-body,
-html,
-#root {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-}
+/* modal.css */
 
-.login-container {
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
-    justify-content: center;
     align-items: center;
-    height: 100vh;
-    width: 100vw;
-    background-color: #1e1e2f;
-}
-
-.login-form {
-    background-color: #282c34;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-container {
+    background: #1a202c; /* bg-gray-800 */
     padding: 2rem;
-    width: 300px;
-    border-radius: 8px;
-}
-
-.logo-container {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.logo {
-    max-width: 100px;
-    height: auto;
-}
-
-.form-label {
-    color: white;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-.form-control {
+    border-radius: 0.5rem;
+    position: relative;
+    max-width: 500px;
     width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 1rem;
-    background-color: #1e1e2f;
-    color: white;
-    border: 1px solid #3a3f4e;
-    border-radius: 4px;
-}
-
-.form-control:focus {
-    border-color: #007bff;
-    outline: none;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 0.5rem;
-    background-color: #007bff;
-    color: white;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
     border: none;
-    border-radius: 4px;
+    color: white;
+    font-size: 1.5rem;
     cursor: pointer;
-}
-
-.submit-btn:hover {
-    background-color: #0056b3;
-}
+  }
+  
