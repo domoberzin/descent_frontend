@@ -88,7 +88,7 @@ export default function ProblemsList() {
   }
 
   return (
-    <div className="flex flex-col space-y-4 items-center">
+    <div className="flex flex-col space-y-4 items-center mt-20">
       <h1 className="text-2xl font-semibold text-white">Problems</h1>
 
       <div className="flex">
