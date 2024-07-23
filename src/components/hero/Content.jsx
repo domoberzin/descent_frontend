@@ -77,19 +77,17 @@ export const Content = () => {
         }}
         className="flex flex-col items-center gap-4 sm:flex-row"
       >
-        {/* <SplashButton
-          onClick={() => router.push("/signin")}
-          className="flex items-center gap-2"
-        >
-          Try it free
-          <FiArrowRight />
-        </SplashButton>
-        <GhostButton
-          onClick={() => router.push("/#features")}
-          className="rounded-md px-4 py-2 text-lg text-zinc-100"
-        >
-          Learn more
-        </GhostButton> */}
+        <a href="/problems">
+          <SplashButton className="flex items-center gap-2">
+            Try a problem
+            <FiArrowRight />
+          </SplashButton>
+        </a>
+        <a href="/">
+          <GhostButton className="rounded-md px-4 py-2 text-lg text-zinc-100">
+            Learn more
+          </GhostButton>
+        </a>
       </motion.div>
     </MaxWidthWrapper>
   );
