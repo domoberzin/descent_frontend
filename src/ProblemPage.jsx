@@ -59,6 +59,7 @@ const ProblemPage = () => {
           output: result.output,
           expected: result.expected_output,
           success: result.passed,
+          stdout: result.stdout,
         }));
         setTestResults(formattedResults);
         setErrorMessage("");
@@ -172,6 +173,7 @@ const ProblemPage = () => {
                         output={result.output}
                         expected={result.expected}
                         success={result.success}
+                        stdout={result.stdout}
                       />
                     ))}
                 </div>

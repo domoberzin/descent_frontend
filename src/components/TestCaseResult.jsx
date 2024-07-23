@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from 'react-bootstrap';
 
-function TestCaseResult({ input, output, expected, success }) {
+function TestCaseResult({ input, output, expected, success, stdout }) {
   const resultColor = success ? 'green' : 'red';
 
   const renderContent = (content) => {
@@ -37,6 +37,12 @@ function TestCaseResult({ input, output, expected, success }) {
           <strong>Expected:</strong>{' '}
           {renderContent(expected)}
         </Card.Text>
+        {stdout && (
+          <Card.Text>
+            <strong>Output:</strong>{' '}
+            {renderContent(stdout)}
+          </Card.Text>
+        )}
       </Card.Body>
     </Card>
   );
