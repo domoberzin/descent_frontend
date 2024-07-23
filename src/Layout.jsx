@@ -1,15 +1,15 @@
 // Layout.js
-import React from 'react';
-import NavBar from './NavBar';
-import Login from './Login';
+import React from "react";
+import NavBar from "./NavBar";
+import { NavBarTest } from "./components/navbar/NavBar";
+import Login from "./Login";
 
 const Layout = ({ children }) => {
   return (
     <div>
-      <NavBar/>
-      <div className="p-1">
-        {children}
-      </div>
+      {/* <NavBar /> */}
+      <NavBarTest />
+      <div className="p-1">{children}</div>
     </div>
   );
 };
