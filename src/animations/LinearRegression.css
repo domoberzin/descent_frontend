@@ -1,37 +1,32 @@
 .LinearRegression {
-    position: relative;
-    padding: 1rem;
-    margin: 0 auto;
-    /* Center the component */
+  position: relative;
+  padding: 1rem;
+  margin: 0 auto; /* Center the component */
 }
 
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.buttons {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.reset-button,
-.undo-button {
-    position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .canvas-container {
-    width: 100%;
-    height: 400px;
-    /* Set a fixed height for the canvas container */
+  width: 100%;
+  height: 400px; /* Set a fixed height for the canvas container */
 }
 
 .LinearRegression canvas {
-    display: block;
+  display: block;
 }
 
-.LinearRegression .buttons {
-    text-align: center;
-    margin-top: 1rem;
+.steps-container {
+  margin-top: 1rem; /* Add spacing between the canvas and regression steps */
+}
+
+.buttons {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
 }

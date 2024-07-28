@@ -24,6 +24,8 @@ const ProblemPage = () => {
   const [showSolution, setShowSolution] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [showCanvas, setShowCanvas] = useState(false); // State to control the visibility of the LinearRegression component
+  const [points, setPoints] = useState([]);
+  const [regressionLine, setRegressionLine] = useState(null);
 
   useEffect(() => {
     axios
@@ -93,6 +95,40 @@ const ProblemPage = () => {
       });
   };
 
+  const addPoint = (x, y) => {
+    const newPoints = [...points, { x, y }];
+    setPoints(newPoints);
+    calculateRegression(newPoints);
+  };
+
+  const calculateRegression = (newPoints) => {
+    if (newPoints.length < 2) {
+      setRegressionLine(null);
+      return;
+    }
+
+    const xMean = newPoints.reduce((sum, point) => sum + point.x, 0) / newPoints.length;
+    const yMean = newPoints.reduce((sum, point) => sum + point.y, 0) / newPoints.length;
+
+    const numerator = newPoints.reduce((sum, point) => sum + (point.x - xMean) * (point.y - yMean), 0);
+    const denominator = newPoints.reduce((sum, point) => sum + (point.x - xMean) ** 2, 0);
+    const slope = numerator / denominator;
+    const yIntercept = yMean - slope * xMean;
+
+    setRegressionLine({ slope, yIntercept });
+  };
+
+  const handleReset = () => {
+    setPoints([]);
+    setRegressionLine(null);
+  };
+
+  const handleUndo = () => {
+    const newPoints = points.slice(0, -1);
+    setPoints(newPoints);
+    calculateRegression(newPoints);
+  };
+
   if (!problem) {
     return <div>Loading...</div>;
   }
@@ -130,7 +166,19 @@ const ProblemPage = () => {
               {showCanvas && (
                 <Card className="mt-4">
                   <Card.Body>
-                    <LinearRegression title="Interactive Linear Regression" />
+                    <LinearRegression  
+                      points={points} 
+                      addPoint={addPoint} 
+                      regressionLine={regressionLine} 
+                    />
+                    <div className="buttons mt-3">
+                      <Button variant="outline-danger" onClick={handleReset} className="mr-2">
+                        Reset
+                      </Button>
+                      <Button variant="outline-warning" onClick={handleUndo}>
+                        Undo
+                      </Button>
+                    </div>
                   </Card.Body>
                 </Card>
               )}

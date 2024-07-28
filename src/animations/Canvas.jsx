@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-function Canvas({ points, addPoint, drawExtra }) {
+function Canvas({ points, addPoint, drawExtra, title }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -105,6 +105,7 @@ function Canvas({ points, addPoint, drawExtra }) {
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+      <h2>{title}</h2>
       <canvas ref={canvasRef} onClick={handleClick} />
     </div>
   );
