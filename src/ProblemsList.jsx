@@ -17,8 +17,8 @@ export default function ProblemsList() {
   useEffect(() => {
     setLoading(true);
     axios
-      // .get(`${API_URL}/v1/questions`)
-      .get("https://35.198.254.147/v1/questions")
+      .get(`${API_URL}/v1/questions`)
+      //.get("https://35.198.254.147/v1/questions")
       .then((response) => {
         setProblems(response.data);
       })

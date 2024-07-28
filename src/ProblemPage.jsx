@@ -12,6 +12,7 @@ import TestCaseResult from "./components/TestCaseResult";
 import ErrorResult from "./components/ErrorResult";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { API_URL } from "./config";
+import LinearRegression from "./animations/LinearRegression"; // Import the LinearRegression component
 
 const ProblemPage = () => {
   const { id } = useParams();
@@ -22,6 +23,7 @@ const ProblemPage = () => {
   const [solution, setSolution] = useState("");
   const [showSolution, setShowSolution] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false); // State to control the visibility of the LinearRegression component
 
   useEffect(() => {
     axios
@@ -75,6 +77,10 @@ const ProblemPage = () => {
     setShowSolution((prevShowSolution) => !prevShowSolution);
   };
 
+  const handleLearnClick = () => {
+    setShowCanvas(!showCanvas); // Toggle the visibility of the LinearRegression component
+  };
+
   const copyToClipboard = (text, setCopied) => {
     navigator.clipboard
       .writeText(text)
@@ -109,7 +115,7 @@ const ProblemPage = () => {
               <Card.Title className="mb-3">{problem.title}</Card.Title>
               <Card.Text className="mb-3">{problem.description}</Card.Text>
               <div className="buttons-container mt-3">
-                <Button variant="primary" className="mr-2">
+                <Button variant="primary" className="mr-2" onClick={handleLearnClick}>
                   Learn
                 </Button>
                 <Button variant="secondary" onClick={toggleSolution}>
@@ -120,6 +126,13 @@ const ProblemPage = () => {
                 <div className="solution-container mt-3">
                   <SolutionComponent solution={solution} />
                 </div>
+              )}
+              {showCanvas && (
+                <Card className="mt-4">
+                  <Card.Body>
+                    <LinearRegression title="Interactive Linear Regression" />
+                  </Card.Body>
+                </Card>
               )}
             </Card.Body>
           </Card>
