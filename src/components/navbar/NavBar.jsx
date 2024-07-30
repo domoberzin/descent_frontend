@@ -5,7 +5,7 @@ import { NavLinks } from "./NavLinks";
 import { NavCTAs } from "./NavCTAs";
 import { useMotionValueEvent, useScroll, motion } from "framer-motion";
 
-export const NavBarTest = () => {
+export const NavBar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { scrollY } = useScroll();
 
