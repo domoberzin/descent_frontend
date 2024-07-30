@@ -31,8 +31,8 @@ export const NavBarTest = () => {
         duration: 1.25,
         ease: "easeInOut",
       }}
-      className={`fixed left-0 right-0 top-0 z-50 bg-zinc-950/0 py-3 transition-colors ${
-        scrolled && "bg-zinc-950/80 backdrop-blur"
+      className={`fixed left-0 right-0 top-0 z-50 bg-zinc-950/10 py-3 transition-colors ${
+        scrolled && "backdrop-blur"
       }`}
     >
       <MaxWidthWrapper>
