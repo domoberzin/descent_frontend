@@ -13,11 +13,13 @@ import ErrorResult from "./components/ErrorResult";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { API_URL } from "./config";
 import LinearRegression from "./animations/LinearRegression"; // Import the LinearRegression component
+import NeuralNetwork from "./animations/NeuralNetwork";
 
 const ProblemPage = () => {
   const { id } = useParams();
   const [problem, setProblem] = useState(null);
   const [code, setCode] = useState(`def solution(a, b): return a + b`);
+  const [topic, setTopic] = useState("");
   const [testResults, setTestResults] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [solution, setSolution] = useState("");
@@ -32,7 +34,8 @@ const ProblemPage = () => {
       .get(`${API_URL}/v1/questions/${id}`)
       .then((response) => {
         setProblem(response.data);
-        setCode(response.data.boilerplate); // Set the boilerplate code from the fetched data
+        setCode(response.data.boilerplate);
+        setTopic(response.data.topic);
         setSolution(response.data.solution);
       })
       .catch((error) => {
@@ -107,11 +110,19 @@ const ProblemPage = () => {
       return;
     }
 
-    const xMean = newPoints.reduce((sum, point) => sum + point.x, 0) / newPoints.length;
-    const yMean = newPoints.reduce((sum, point) => sum + point.y, 0) / newPoints.length;
+    const xMean =
+      newPoints.reduce((sum, point) => sum + point.x, 0) / newPoints.length;
+    const yMean =
+      newPoints.reduce((sum, point) => sum + point.y, 0) / newPoints.length;
 
-    const numerator = newPoints.reduce((sum, point) => sum + (point.x - xMean) * (point.y - yMean), 0);
-    const denominator = newPoints.reduce((sum, point) => sum + (point.x - xMean) ** 2, 0);
+    const numerator = newPoints.reduce(
+      (sum, point) => sum + (point.x - xMean) * (point.y - yMean),
+      0
+    );
+    const denominator = newPoints.reduce(
+      (sum, point) => sum + (point.x - xMean) ** 2,
+      0
+    );
     const slope = numerator / denominator;
     const yIntercept = yMean - slope * xMean;
 
@@ -151,7 +162,11 @@ const ProblemPage = () => {
               <Card.Title className="mb-3">{problem.title}</Card.Title>
               <Card.Text className="mb-3">{problem.description}</Card.Text>
               <div className="buttons-container mt-3">
-                <Button variant="primary" className="mr-2" onClick={handleLearnClick}>
+                <Button
+                  variant="primary"
+                  className="mr-2"
+                  onClick={handleLearnClick}
+                >
                   Learn
                 </Button>
                 <Button variant="secondary" onClick={toggleSolution}>
@@ -163,16 +178,21 @@ const ProblemPage = () => {
                   <SolutionComponent solution={solution} />
                 </div>
               )}
-              {showCanvas && (
+              {topic == "Neural Networks" && <NeuralNetwork />}
+              {showCanvas && topic != "Neural Networks" && (
                 <Card className="mt-4">
                   <Card.Body>
-                    <LinearRegression  
-                      points={points} 
-                      addPoint={addPoint} 
-                      regressionLine={regressionLine} 
+                    <LinearRegression
+                      points={points}
+                      addPoint={addPoint}
+                      regressionLine={regressionLine}
                     />
                     <div className="buttons mt-3">
-                      <Button variant="outline-danger" onClick={handleReset} className="mr-2">
+                      <Button
+                        variant="outline-danger"
+                        onClick={handleReset}
+                        className="mr-2"
+                      >
                         Reset
                       </Button>
                       <Button variant="outline-warning" onClick={handleUndo}>
