@@ -16,6 +16,9 @@ export const NavLinks = () => {
       <li>
         <NavLink href="/contact">Contact</NavLink>
       </li>
+      <li>
+        <NavLink href="/visuals">Visualisations</NavLink>
+      </li>
     </ul>
   );
 };

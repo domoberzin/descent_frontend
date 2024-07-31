@@ -8,6 +8,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import Contact from "./Contact";
 import Submission from "./Submission";
 import Home from "./HomePage";
+import Visualisations from "./Visualisations";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
               <Route path="/problem/:id" element={<ProblemPage />} />
               <Route path="/submission" element={<Submission />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/visuals" element={<Visualisations />} />
             </Routes>
           </Layout>
         </Router>
