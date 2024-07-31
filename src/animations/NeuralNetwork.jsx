@@ -1,5 +1,78 @@
 import React, { useState, useCallback, useEffect } from "react";
 
+export default function NeuralNetwork() {
+  const nn = useNeuralNetwork([3, 4, 2]);
+
+  React.useEffect(() => {
+    nn.initializeNetwork();
+  }, [nn.layers]);
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Neural Network Simulator</h1>
+      <div className="mb-4 space-x-2">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={nn.addLayer}
+        >
+          Add Layer
+        </button>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded"
+          onClick={nn.removeLayer}
+        >
+          Remove Layer
+        </button>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded"
+          onClick={nn.toggleDirection}
+        >
+          {nn.direction === "forward"
+            ? "Switch to Backward"
+            : "Switch to Forward"}
+        </button>
+        <button
+          className="bg-purple-500 text-white px-4 py-2 rounded"
+          onClick={nn.simulateActivation}
+        >
+          Simulate Activation
+        </button>
+        <select
+          className="bg-gray-200 px-4 py-2 rounded"
+          value={nn.activationFunction}
+          onChange={(e) => nn.setActivationFunction(e.target.value)}
+        >
+          <option value="sigmoid">Sigmoid</option>
+          <option value="relu">ReLU</option>
+          <option value="tanh">Tanh</option>
+        </select>
+      </div>
+      <div className="flex items-start">
+        {nn.layers.map((layerSize, index) => (
+          <React.Fragment key={index}>
+            <Layer
+              size={layerSize}
+              activations={nn.activations[index]}
+              onChange={(value) => nn.handleLayerChange(index, value)}
+            />
+            {index < nn.layers.length - 1 && nn.weights[index] && (
+              <Connections
+                fromSize={nn.layers[index]}
+                toSize={nn.layers[index + 1]}
+                weights={nn.weights[index]}
+                direction={nn.direction}
+                updateWeight={(from, to, value) =>
+                  nn.updateWeight(index, from, to, value)
+                }
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const useNeuralNetwork = (initialLayers) => {
   const [layers, setLayers] = useState(initialLayers);
   const [activations, setActivations] = useState([]);
@@ -123,79 +196,6 @@ const useNeuralNetwork = (initialLayers) => {
   };
 };
 
-const NeuralNetwork = () => {
-  const nn = useNeuralNetwork([3, 4, 2]);
-
-  React.useEffect(() => {
-    nn.initializeNetwork();
-  }, [nn.layers]);
-
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Neural Network Simulator</h1>
-      <div className="mb-4 space-x-2">
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={nn.addLayer}
-        >
-          Add Layer
-        </button>
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded"
-          onClick={nn.removeLayer}
-        >
-          Remove Layer
-        </button>
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded"
-          onClick={nn.toggleDirection}
-        >
-          {nn.direction === "forward"
-            ? "Switch to Backward"
-            : "Switch to Forward"}
-        </button>
-        <button
-          className="bg-purple-500 text-white px-4 py-2 rounded"
-          onClick={nn.simulateActivation}
-        >
-          Simulate Activation
-        </button>
-        <select
-          className="bg-gray-200 px-4 py-2 rounded"
-          value={nn.activationFunction}
-          onChange={(e) => nn.setActivationFunction(e.target.value)}
-        >
-          <option value="sigmoid">Sigmoid</option>
-          <option value="relu">ReLU</option>
-          <option value="tanh">Tanh</option>
-        </select>
-      </div>
-      <div className="flex items-start">
-        {nn.layers.map((layerSize, index) => (
-          <React.Fragment key={index}>
-            <Layer
-              size={layerSize}
-              activations={nn.activations[index]}
-              onChange={(value) => nn.handleLayerChange(index, value)}
-            />
-            {index < nn.layers.length - 1 && nn.weights[index] && (
-              <Connections
-                fromSize={nn.layers[index]}
-                toSize={nn.layers[index + 1]}
-                weights={nn.weights[index]}
-                direction={nn.direction}
-                updateWeight={(from, to, value) =>
-                  nn.updateWeight(index, from, to, value)
-                }
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const Layer = ({ size, activations, onChange }) => {
   return (
     <div className="flex flex-col items-center mx-2">
@@ -273,5 +273,3 @@ const Connections = ({
     </div>
   );
 };
-
-export default NeuralNetwork;
