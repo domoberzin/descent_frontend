@@ -25,7 +25,7 @@ const ProblemPage = () => {
   const [solution, setSolution] = useState("");
   const [showSolution, setShowSolution] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
-  const [showCanvas, setShowCanvas] = useState(false); // State to control the visibility of the LinearRegression component
+  const [showLearn, setShowLearn] = useState(false); // State to control the visibility of the LinearRegression component
   const [points, setPoints] = useState([]);
   const [regressionLine, setRegressionLine] = useState(null);
 
@@ -83,7 +83,7 @@ const ProblemPage = () => {
   };
 
   const handleLearnClick = () => {
-    setShowCanvas(!showCanvas); // Toggle the visibility of the LinearRegression component
+    setShowLearn(!showLearn); // Toggle the visibility of the LinearRegression component
   };
 
   const copyToClipboard = (text, setCopied) => {
@@ -178,8 +178,8 @@ const ProblemPage = () => {
                   <SolutionComponent solution={solution} />
                 </div>
               )}
-              {topic == "Neural Networks" && <NeuralNetwork />}
-              {showCanvas && topic != "Neural Networks" && (
+              {showLearn && topic == "Neural Networks" && <NeuralNetwork />}
+              {showLearn && topic != "Neural Networks" && (
                 <Card className="mt-4">
                   <Card.Body>
                     <LinearRegression
