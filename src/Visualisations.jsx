@@ -12,7 +12,8 @@ import XGBoostVisualization from "./animations/XGBoost";
 
 export default function Visualisations() {
   return (
-    <Container fluid className="app-container p-0 mt-20">
+    // Background set to bg-white temporarily for debugging
+    <Container fluid className="app-container p-0 mt-20 bg-white text-black">
       <div>Visualisations</div>
       <NeuralNetwork />
       <SVM />
