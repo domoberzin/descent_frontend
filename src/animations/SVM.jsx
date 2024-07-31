@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 
-export default function SVM() {
+const SVMVisualization = () => {
   const canvasRef = useRef(null);
   const [points, setPoints] = useState([]);
   const [svmLine, setSvmLine] = useState(null);
+  const [currentClass, setCurrentClass] = useState(1);
+  const [equation, setEquation] = useState("");
 
   const canvasSize = 400;
   const gridSize = 20;
 
   useEffect(() => {
     drawCanvas();
-  }, [points, svmLine]);
+  }, [points, svmLine, currentClass]);
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
@@ -56,7 +58,7 @@ export default function SVM() {
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const newPoint = { x, y, class: points.length % 2 === 0 ? 1 : -1 };
+    const newPoint = { x, y, class: currentClass };
     setPoints([...points, newPoint]);
     updateSVM([...points, newPoint]);
   };
@@ -64,15 +66,16 @@ export default function SVM() {
   const updateSVM = (currentPoints) => {
     if (currentPoints.length < 2) {
       setSvmLine(null);
+      setEquation("");
       return;
     }
 
-    // Simple SVM implementation (not a real SVM, just for visualization)
     const class1 = currentPoints.filter((p) => p.class === 1);
     const class2 = currentPoints.filter((p) => p.class === -1);
 
     if (class1.length === 0 || class2.length === 0) {
       setSvmLine(null);
+      setEquation("");
       return;
     }
 
@@ -89,12 +92,19 @@ export default function SVM() {
 
     const lineLength = canvasSize * 1.5;
 
-    setSvmLine({
+    const line = {
       x1: midPoint.x - (Math.cos(angle) * lineLength) / 2,
       y1: midPoint.y - (Math.sin(angle) * lineLength) / 2,
       x2: midPoint.x + (Math.cos(angle) * lineLength) / 2,
       y2: midPoint.y + (Math.sin(angle) * lineLength) / 2,
-    });
+    };
+
+    setSvmLine(line);
+
+    // Calculate line equation
+    const m = (line.y2 - line.y1) / (line.x2 - line.x1);
+    const b = line.y1 - m * line.x1;
+    setEquation(`y = ${m.toFixed(2)}x + ${b.toFixed(2)}`);
   };
 
   const getCenterPoint = (points) => {
@@ -105,9 +115,25 @@ export default function SVM() {
     return { x: sum.x / points.length, y: sum.y / points.length };
   };
 
+  const toggleClass = () => {
+    setCurrentClass(currentClass === 1 ? -1 : 1);
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">SVM Visualization</h2>
+      <div className="mb-4">
+        <button
+          onClick={toggleClass}
+          className={`px-4 py-2 rounded ${
+            currentClass === 1
+              ? "bg-blue-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          Current Class: {currentClass === 1 ? "Blue (+1)" : "Red (-1)"}
+        </button>
+      </div>
       <canvas
         ref={canvasRef}
         width={canvasSize}
@@ -115,10 +141,13 @@ export default function SVM() {
         onClick={handleCanvasClick}
         className="border border-gray-300 cursor-crosshair"
       />
+      {equation && <p className="mt-2">Line Equation: {equation}</p>}
       <p className="mt-2">
-        Click on the canvas to add points. Blue points are class 1, red points
-        are class -1.
+        Click on the canvas to add points. Use the button to toggle between
+        classes.
       </p>
     </div>
   );
-}
+};
+
+export default SVMVisualization;
