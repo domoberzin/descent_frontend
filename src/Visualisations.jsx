@@ -3,6 +3,12 @@ import { Container } from "react-bootstrap";
 import NeuralNetwork from "./animations/NeuralNetwork";
 import SVM from "./animations/SVM";
 import GradientDescent from "./animations/GradientDescent";
+import KNN from "./animations/KNearestNeighbours";
+import KMC from "./animations/KMeansClustering";
+import RFC from "./animations/RandomForestClassifier";
+import DecisionTreeVisualization from "./animations/DecisionTrees";
+import GradientBoostingVisualization from "./animations/GradientBoosting";
+import XGBoostVisualization from "./animations/XGBoost";
 
 export default function Visualisations() {
   return (
@@ -11,6 +17,12 @@ export default function Visualisations() {
       <NeuralNetwork />
       <SVM />
       <GradientDescent />
+      <KNN />
+      <KMC />
+      <RFC />
+      <DecisionTreeVisualization />
+      <GradientBoostingVisualization />
+      <XGBoostVisualization />
     </Container>
   );
 }
