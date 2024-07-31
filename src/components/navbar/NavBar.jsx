@@ -4,10 +4,12 @@ import { NavLogo } from "./NavLogo";
 import { NavLinks } from "./NavLinks";
 import { NavCTAs } from "./NavCTAs";
 import { useMotionValueEvent, useScroll, motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 export const NavBar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { scrollY } = useScroll();
+  const location = useLocation();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     if (latest > 150) {
@@ -16,6 +18,9 @@ export const NavBar = () => {
       setScrolled(false);
     }
   });
+
+  const isHomePage = location.pathname === "/";
+  console.log("isHomePage:", isHomePage);
 
   return (
     <motion.nav
@@ -31,7 +36,9 @@ export const NavBar = () => {
         duration: 1.25,
         ease: "easeInOut",
       }}
-      className={`fixed left-0 right-0 top-0 z-50 bg-zinc-950/10 py-3 transition-colors ${
+      className={`${
+        isHomePage ? "fixed" : ""
+      } left-0 right-0 top-0 z-50 bg-zinc-950/10 py-3 transition-colors ${
         scrolled && "backdrop-blur"
       }`}
     >
