@@ -1,26 +1,38 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const SVMVisualization = () => {
+export default function SVM() {
   const canvasRef = useRef(null);
   const [points, setPoints] = useState([]);
   const [svmLine, setSvmLine] = useState(null);
+  const [svmPlane, setSvmPlane] = useState(null);
   const [currentClass, setCurrentClass] = useState(1);
   const [equation, setEquation] = useState("");
+  const [is3D, setIs3D] = useState(false);
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
 
   const canvasSize = 400;
   const gridSize = 20;
 
   useEffect(() => {
     drawCanvas();
-  }, [points, svmLine, currentClass]);
+  }, [points, svmLine, svmPlane, currentClass, is3D, rotation]);
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvasSize, canvasSize);
 
+    if (!is3D) {
+      draw2D(ctx);
+    } else {
+      draw3D(ctx);
+    }
+  };
+
+  const draw2D = (ctx) => {
     // Draw grid
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
@@ -37,7 +49,7 @@ const SVMVisualization = () => {
 
     // Draw points
     points.forEach((point) => {
-      ctx.fillStyle = point.class === 1 ? "blue" : "red";
+      ctx.fillStyle = getColorForClass(point.class);
       ctx.beginPath();
       ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
       ctx.fill();
@@ -54,84 +66,279 @@ const SVMVisualization = () => {
     }
   };
 
+  const draw3D = (ctx) => {
+    const points3D = transformPoints(points);
+    const planePoints = svmPlane ? generatePlanePoints(svmPlane) : [];
+
+    // Draw transformed grid
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 1;
+    for (let i = -1; i <= 1; i += 0.2) {
+      drawLine(
+        ctx,
+        transformPoint({ x: i, y: -1, z: -1 }),
+        transformPoint({ x: i, y: 1, z: -1 })
+      );
+      drawLine(
+        ctx,
+        transformPoint({ x: i, y: -1, z: 1 }),
+        transformPoint({ x: i, y: 1, z: 1 })
+      );
+      drawLine(
+        ctx,
+        transformPoint({ x: -1, y: i, z: -1 }),
+        transformPoint({ x: 1, y: i, z: -1 })
+      );
+      drawLine(
+        ctx,
+        transformPoint({ x: -1, y: i, z: 1 }),
+        transformPoint({ x: 1, y: i, z: 1 })
+      );
+    }
+
+    // Draw SVM plane
+    if (planePoints.length > 0) {
+      ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < planePoints.length; i++) {
+        for (let j = 0; j < planePoints[i].length; j++) {
+          const point = transformPoint(planePoints[i][j]);
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+    }
+
+    // Draw points
+    points3D.forEach((point) => {
+      ctx.fillStyle = getColorForClass(point.class);
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+  };
+
+  const drawLine = (ctx, start, end) => {
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+  };
+
+  const transformPoint = (point) => {
+    const { x, y, z } = point;
+    const cosX = Math.cos(rotation.x);
+    const sinX = Math.sin(rotation.x);
+    const cosY = Math.cos(rotation.y);
+    const sinY = Math.sin(rotation.y);
+
+    const rotatedX = cosY * x + sinY * z;
+    const rotatedY = sinX * sinY * x + cosX * y - sinX * cosY * z;
+    const rotatedZ = -cosX * sinY * x + sinX * y + cosX * cosY * z;
+
+    return {
+      x: ((rotatedX + 1) * canvasSize) / 2,
+      y: ((-rotatedY + 1) * canvasSize) / 2,
+      z: rotatedZ,
+      class: point.class,
+    };
+  };
+
+  const transformPoints = (points) => {
+    return points.map(transformPoint);
+  };
+
+  const generatePlanePoints = (plane) => {
+    const { a, b, c, d } = plane;
+    const points = [];
+    for (let x = -1; x <= 1; x += 0.1) {
+      const row = [];
+      for (let y = -1; y <= 1; y += 0.1) {
+        const z = (-d - a * x - b * y) / c;
+        row.push({ x, y, z });
+      }
+      points.push(row);
+    }
+    return points;
+  };
+
   const handleCanvasClick = (event) => {
+    if (isDragging) return;
+
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const newPoint = { x, y, class: currentClass };
+    const z = is3D ? Math.random() * 2 - 1 : 0;
+    const newPoint = {
+      x: (x / canvasSize) * 2 - 1,
+      y: -(y / canvasSize) * 2 + 1,
+      z,
+      class: currentClass,
+    };
     setPoints([...points, newPoint]);
     updateSVM([...points, newPoint]);
+  };
+
+  const handleMouseDown = (event) => {
+    if (is3D) {
+      setIsDragging(true);
+      setLastMousePos({ x: event.clientX, y: event.clientY });
+    }
+  };
+
+  const handleMouseMove = (event) => {
+    if (!isDragging || !is3D) return;
+
+    const dx = event.clientX - lastMousePos.x;
+    const dy = event.clientY - lastMousePos.y;
+
+    setRotation({
+      x: rotation.x + dy * 0.01,
+      y: rotation.y + dx * 0.01,
+    });
+
+    setLastMousePos({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   const updateSVM = (currentPoints) => {
     if (currentPoints.length < 2) {
       setSvmLine(null);
+      setSvmPlane(null);
       setEquation("");
       return;
     }
 
-    const class1 = currentPoints.filter((p) => p.class === 1);
-    const class2 = currentPoints.filter((p) => p.class === -1);
-
-    if (class1.length === 0 || class2.length === 0) {
+    const classes = [...new Set(currentPoints.map((p) => p.class))];
+    if (classes.length < 2) {
       setSvmLine(null);
+      setSvmPlane(null);
       setEquation("");
       return;
     }
 
-    const center1 = getCenterPoint(class1);
-    const center2 = getCenterPoint(class2);
+    if (!is3D) {
+      const class1 = currentPoints.filter((p) => p.class === classes[0]);
+      const class2 = currentPoints.filter((p) => p.class === classes[1]);
 
-    const midPoint = {
-      x: (center1.x + center2.x) / 2,
-      y: (center1.y + center2.y) / 2,
-    };
+      const center1 = getCenterPoint(class1);
+      const center2 = getCenterPoint(class2);
 
-    const angle =
-      Math.atan2(center2.y - center1.y, center2.x - center1.x) + Math.PI / 2;
+      const midPoint = {
+        x: (center1.x + center2.x) / 2,
+        y: (center1.y + center2.y) / 2,
+      };
 
-    const lineLength = canvasSize * 1.5;
+      const angle =
+        Math.atan2(center2.y - center1.y, center2.x - center1.x) + Math.PI / 2;
 
-    const line = {
-      x1: midPoint.x - (Math.cos(angle) * lineLength) / 2,
-      y1: midPoint.y - (Math.sin(angle) * lineLength) / 2,
-      x2: midPoint.x + (Math.cos(angle) * lineLength) / 2,
-      y2: midPoint.y + (Math.sin(angle) * lineLength) / 2,
-    };
+      const lineLength = canvasSize * 1.5;
 
-    setSvmLine(line);
+      const line = {
+        x1: midPoint.x - (Math.cos(angle) * lineLength) / 2,
+        y1: midPoint.y - (Math.sin(angle) * lineLength) / 2,
+        x2: midPoint.x + (Math.cos(angle) * lineLength) / 2,
+        y2: midPoint.y + (Math.sin(angle) * lineLength) / 2,
+      };
 
-    // Calculate line equation
-    const m = (line.y2 - line.y1) / (line.x2 - line.x1);
-    const b = line.y1 - m * line.x1;
-    setEquation(`y = ${m.toFixed(2)}x + ${b.toFixed(2)}`);
+      setSvmLine(line);
+
+      // Calculate line equation
+      const m = (line.y2 - line.y1) / (line.x2 - line.x1);
+      const b = line.y1 - m * line.x1;
+      setEquation(`y = ${m.toFixed(2)}x + ${b.toFixed(2)}`);
+      // ...
+    } else {
+      // 3D plane calculation (simplified)
+      const centroid = getCenterPoint(currentPoints);
+      const normal = {
+        x: Math.random() - 0.5,
+        y: Math.random() - 0.5,
+        z: Math.random() - 0.5,
+      };
+      const d = -(
+        normal.x * centroid.x +
+        normal.y * centroid.y +
+        normal.z * centroid.z
+      );
+
+      setSvmPlane({ a: normal.x, b: normal.y, c: normal.z, d });
+      setEquation(
+        `${normal.x.toFixed(2)}x + ${normal.y.toFixed(2)}y + ${normal.z.toFixed(
+          2
+        )}z + ${d.toFixed(2)} = 0`
+      );
+    }
   };
 
   const getCenterPoint = (points) => {
     const sum = points.reduce(
-      (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
-      { x: 0, y: 0 }
+      (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y, z: acc.z + p.z }),
+      { x: 0, y: 0, z: 0 }
     );
-    return { x: sum.x / points.length, y: sum.y / points.length };
+    return {
+      x: sum.x / points.length,
+      y: sum.y / points.length,
+      z: sum.z / points.length,
+    };
   };
 
-  const toggleClass = () => {
-    setCurrentClass(currentClass === 1 ? -1 : 1);
+  const getColorForClass = (classValue) => {
+    switch (classValue) {
+      case 1:
+        return "blue";
+      case 2:
+        return "red";
+      case 3:
+        return "green";
+      default:
+        return "black";
+    }
+  };
+
+  const resetVisualization = () => {
+    setPoints([]);
+    setSvmLine(null);
+    setSvmPlane(null);
+    setEquation("");
+    setRotation({ x: 0, y: 0 });
+    setIs3D(false);
   };
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">SVM Visualization</h2>
-      <div className="mb-4">
-        <button
-          onClick={toggleClass}
-          className={`px-4 py-2 rounded ${
-            currentClass === 1
-              ? "bg-blue-500 text-white"
-              : "bg-red-500 text-white"
-          }`}
+      <div className="mb-4 flex space-x-4">
+        <select
+          value={currentClass}
+          onChange={(e) => setCurrentClass(parseInt(e.target.value))}
+          className="px-4 py-2 rounded border"
         >
-          Current Class: {currentClass === 1 ? "Blue (+1)" : "Red (-1)"}
+          <option value={1}>Class 1 (Blue)</option>
+          <option value={2}>Class 2 (Red)</option>
+          <option value={3}>Class 3 (Green)</option>
+        </select>
+        <button
+          onClick={() => {
+            setIs3D(!is3D);
+            setSvmLine(null);
+            setSvmPlane(null);
+            setEquation("");
+            setRotation({ x: 0, y: 0 });
+          }}
+          className="px-4 py-2 rounded bg-blue-500 text-white"
+        >
+          Toggle {is3D ? "2D" : "3D"}
+        </button>
+        <button
+          onClick={resetVisualization}
+          className="px-4 py-2 rounded bg-red-500 text-white"
+        >
+          Reset
         </button>
       </div>
       <canvas
@@ -139,15 +346,17 @@ const SVMVisualization = () => {
         width={canvasSize}
         height={canvasSize}
         onClick={handleCanvasClick}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         className="border border-gray-300 cursor-crosshair"
       />
-      {equation && <p className="mt-2">Line Equation: {equation}</p>}
+      {equation && <p className="mt-2">Equation: {equation}</p>}
       <p className="mt-2">
-        Click on the canvas to add points. Use the button to toggle between
-        classes.
+        Click on the canvas to add points. Use the dropdown to select the class.
+        {is3D && " In 3D mode, click and drag to rotate the view."}
       </p>
     </div>
   );
-};
-
-export default SVMVisualization;
+}
