@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function KMC() {
   const canvasRef = useRef(null);
@@ -6,6 +6,8 @@ export default function KMC() {
   const [k, setK] = useState(3);
   const [centroids, setCentroids] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [iterations, setIterations] = useState(0);
+  const [autoRun, setAutoRun] = useState(false);
 
   const canvasSize = 400;
   const gridSize = 20;
@@ -13,6 +15,12 @@ export default function KMC() {
   useEffect(() => {
     drawCanvas();
   }, [points, k, centroids]);
+
+  useEffect(() => {
+    if (autoRun && centroids.length > 0 && !isRunning) {
+      runKMeans();
+    }
+  }, [autoRun, centroids, isRunning]);
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
@@ -60,6 +68,7 @@ export default function KMC() {
   };
 
   const handleCanvasClick = (event) => {
+    if (isRunning) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -74,17 +83,20 @@ export default function KMC() {
         y: Math.random() * canvasSize,
       }));
     setCentroids(newCentroids);
+    setIterations(0);
   };
 
   const runKMeans = async () => {
     setIsRunning(true);
     let oldCentroids;
+    let iterationCount = 0;
     do {
       oldCentroids = [...centroids];
       assignPointsToClusters();
       updateCentroids();
+      setIterations(++iterationCount);
       await new Promise((resolve) => setTimeout(resolve, 500)); // Delay for visualization
-    } while (!centroidsEqual(oldCentroids, centroids));
+    } while (!centroidsEqual(oldCentroids, centroids) && iterationCount < 50); // Add iteration limit
     setIsRunning(false);
   };
 
@@ -126,14 +138,32 @@ export default function KMC() {
     );
   };
 
+  const resetVisualization = () => {
+    setPoints([]);
+    setCentroids([]);
+    setIterations(0);
+    setIsRunning(false);
+  };
+
+  const generateRandomPoints = () => {
+    const numPoints = 50; // You can adjust this number
+    const newPoints = Array(numPoints)
+      .fill()
+      .map(() => ({
+        x: Math.random() * canvasSize,
+        y: Math.random() * canvasSize,
+      }));
+    setPoints(newPoints);
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">
-        K-means Clustering Visualization
+        ✅ K-Means Clustering Visualization
       </h2>
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap gap-2">
         <label className="mr-2">
-          K value:
+          K Value:
           <input
             type="number"
             value={k}
@@ -144,7 +174,7 @@ export default function KMC() {
         </label>
         <button
           onClick={initializeCentroids}
-          className="px-4 py-2 bg-blue-500 text-white rounded mr-2"
+          className="px-4 py-2 bg-blue-500 text-white rounded"
           disabled={isRunning}
         >
           Initialize Centroids
@@ -154,8 +184,31 @@ export default function KMC() {
           className="px-4 py-2 bg-green-500 text-white rounded"
           disabled={isRunning || centroids.length === 0}
         >
-          Run K-means
+          Run K-Means
         </button>
+        <button
+          onClick={resetVisualization}
+          className="px-4 py-2 bg-red-500 text-white rounded"
+          disabled={isRunning}
+        >
+          Reset
+        </button>
+        <button
+          onClick={generateRandomPoints}
+          className="px-4 py-2 bg-purple-500 text-white rounded"
+          disabled={isRunning}
+        >
+          Generate Random Points
+        </button>
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={autoRun}
+            onChange={() => setAutoRun(!autoRun)}
+            className="mr-2"
+          />
+          Auto-run
+        </label>
       </div>
       <canvas
         ref={canvasRef}
@@ -167,6 +220,7 @@ export default function KMC() {
       <p className="mt-2">
         Click to add points. Initialize centroids, then run K-means.
       </p>
+      <p className="mt-2">Iterations: {iterations}</p>
     </div>
   );
 }
