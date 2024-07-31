@@ -20,7 +20,6 @@ export const NavBar = () => {
   });
 
   const isHomePage = location.pathname === "/";
-  console.log("isHomePage:", isHomePage);
 
   return (
     <motion.nav
