@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-export default function DecisionTreeVisualization() {
+export default function DecisionTree() {
   const [maxDepth, setMaxDepth] = useState(3);
   const [features, setFeatures] = useState([
     { name: "Feature 1", value: 50 },

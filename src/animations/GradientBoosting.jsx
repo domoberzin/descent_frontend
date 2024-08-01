@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-export default function GradientBoostingVisualization() {
+export default function GradientBoost() {
   const [numTrees, setNumTrees] = useState(5);
   const [learningRate, setLearningRate] = useState(0.1);
   const [data, setData] = useState([]);
