@@ -1,11 +1,18 @@
 // ProblemPage.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Container, Button, Card } from "react-bootstrap";
 import Split from "react-split";
 import Editor from "@monaco-editor/react";
-import { FaCopy, FaCheck } from "react-icons/fa";
+import { FaCopy, FaCheck, FaLock } from "react-icons/fa";
+import {
+  Container,
+  Button,
+  Card,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
+import { motion } from "framer-motion";
 import SolutionComponent from "./components/Solution";
 import "./ProblemPage.css";
 import TestCaseResult from "./components/TestCaseResult";
@@ -28,6 +35,7 @@ const ProblemPage = () => {
   const [showLearn, setShowLearn] = useState(false); // State to control the visibility of the LinearRegression component
   const [points, setPoints] = useState([]);
   const [regressionLine, setRegressionLine] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to check if the user is logged in
 
   useEffect(() => {
     axios
@@ -211,16 +219,20 @@ const ProblemPage = () => {
         >
           <Card className="h-100">
             <Card.Body className="d-flex flex-column">
-              <div className="solution-header d-flex justify-content-between align-items-center">
+              <div className="flex justify-content-between justify-center">
                 <Card.Title className="mb-0">Your Solution</Card.Title>
-                <div>
-                  <Button
-                    variant="primary"
-                    onClick={handleSubmit}
-                    className="submit-button mr-2"
-                  >
-                    Submit Code
-                  </Button>
+                <div className="flex flex-row">
+                  {isLoggedIn ? (
+                    <Button
+                      variant="primary"
+                      onClick={handleSubmit}
+                      className="submit-button mr-2"
+                    >
+                      Submit Code
+                    </Button>
+                  ) : (
+                    <LockedButton />
+                  )}
                   <Button
                     variant="outline-secondary"
                     onClick={() => copyToClipboard(code, setCodeCopied)}
@@ -264,6 +276,50 @@ const ProblemPage = () => {
         </div>
       </Split>
     </Container>
+  );
+};
+
+const LockedButton = () => {
+  const [isVibrating, setIsVibrating] = useState(false);
+  const handleLockedClick = () => {
+    setIsVibrating(true);
+    setTimeout(() => setIsVibrating(false), 500);
+  };
+
+  return (
+    <OverlayTrigger
+      placement="top"
+      overlay={
+        <Tooltip id="tooltip-top">Please sign in to submit code!</Tooltip>
+      }
+    >
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Button
+          variant="danger"
+          className="submit-button mr-2"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onClick={handleLockedClick}
+        >
+          <motion.div
+            animate={
+              isVibrating
+                ? {
+                    rotate: [0, -10, 10, -10, 10, 0],
+                    transition: { duration: 0.5, loop: 1 },
+                  }
+                : {}
+            }
+          >
+            <FaLock style={{ marginRight: "5px" }} />
+          </motion.div>
+          Submit Code
+        </Button>
+      </motion.div>
+    </OverlayTrigger>
   );
 };
 
