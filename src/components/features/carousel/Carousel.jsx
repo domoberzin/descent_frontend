@@ -59,10 +59,10 @@ const Carousel = () => {
         <div className="mx-auto max-w-7xl px-4 md:px-8">
           <div className="mb-12 flex flex-col items-center justify-between gap-6 md:flex-row md:items-end">
             <div className="space-y-3">
-              <SectionHeading>Dive into the specifics</SectionHeading>
+              <SectionHeading>Explore Our Learning Experience</SectionHeading>
               <SectionSubheading>
-                Anything else you want to show off? What are you proud of? What
-                makes you different? Show it off here!
+                Discover how our platform makes learning machine learning
+                intuitive, engaging, and effective.
               </SectionSubheading>
             </div>
             <div className="flex items-center gap-2">
@@ -132,36 +132,36 @@ const features = [
   {
     id: 1,
     Icon: FiArrowUp,
-    title: "Fast & accurate reporting",
+    title: "Progressive Learning Path",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi, dolor.",
+      "Start from basics and advance to complex ML algorithms with our structured, interactive courses.",
   },
   {
     id: 2,
-    Icon: FiShield,
-    title: "A+ Security",
+    Icon: FiBox,
+    title: "Interactive Visualizations",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi, dolor.",
+      "Gain intuitive understanding of ML concepts through our dynamic, hands-on visual demonstrations.",
   },
   {
     id: 3,
     Icon: FiUsers,
-    title: "World class teams",
+    title: "Collaborative Projects",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi, dolor.",
+      "Work on real-world ML projects with peers, fostering teamwork and practical experience.",
   },
   {
     id: 4,
-    Icon: FiPhone,
-    title: "Best in class support",
+    Icon: FiShield,
+    title: "Industry-Relevant Skills",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi, dolor.",
+      "Learn and practice with tools and techniques used by ML professionals in the field.",
   },
   {
     id: 5,
-    Icon: FiBox,
-    title: "All-in-one product",
+    Icon: FiPhone,
+    title: "Expert Support",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi, dolor.",
+      "Get guidance from ML experts and a supportive community to help you overcome challenges.",
   },
 ];

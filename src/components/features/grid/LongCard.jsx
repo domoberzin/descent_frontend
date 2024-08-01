@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CalloutChip } from "../../utils/CalloutChip";
 import { Card } from "../../utils/Card";
 import { motion } from "framer-motion";
 import {
-  SiAuth0,
-  SiBuildkite,
-  SiGithub,
-  SiPlanetscale,
-  SiReact,
-  SiSupabase,
-  SiTwilio,
-  SiZapier,
+  SiPython,
+  SiTensorflow,
+  SiPytorch,
+  SiScikitlearn,
+  SiKeras,
+  SiJupyter,
+  SiPandas,
+  SiNumpy,
 } from "react-icons/si";
 
 export const LongCard = () => {
@@ -18,11 +18,11 @@ export const LongCard = () => {
     <div className="col-span-2 h-fit sm:h-[209px]">
       <Card>
         <div className="relative z-20">
-          <CalloutChip>Callout #4</CalloutChip>
-          <p className="mb-1.5 text-2xl">Talk about integrations</p>
+          <CalloutChip>Tech Stack</CalloutChip>
+          <p className="mb-1.5 text-2xl">Industry-Standard ML Tools</p>
           <p className="max-w-sm text-zinc-400">
-            If you connect with tools that people already know and use, show it
-            off!
+            Learn and practice with the same tools used by ML professionals in
+            the field.
           </p>
         </div>
         <div className="absolute bottom-0 right-0 top-0 z-10 w-48 bg-gradient-to-r from-zinc-950/0 to-zinc-950" />
@@ -161,28 +161,28 @@ const degreesToRadians = (degrees) => {
 
 const ICON_DATA = [
   {
-    Icon: SiGithub,
+    Icon: SiPython,
   },
   {
-    Icon: SiTwilio,
+    Icon: SiTensorflow,
   },
   {
-    Icon: SiReact,
+    Icon: SiPytorch,
   },
   {
-    Icon: SiZapier,
+    Icon: SiScikitlearn,
   },
   {
-    Icon: SiAuth0,
+    Icon: SiKeras,
   },
   {
-    Icon: SiPlanetscale,
+    Icon: SiJupyter,
   },
   {
-    Icon: SiSupabase,
+    Icon: SiPandas,
   },
   {
-    Icon: SiBuildkite,
+    Icon: SiNumpy,
   },
 ];
 

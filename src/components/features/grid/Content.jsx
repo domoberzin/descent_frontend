@@ -1,5 +1,4 @@
 import { MaxWidthWrapper } from "../../utils/MaxWidthWrapper";
-import React from "react";
 import { Tower } from "./Tower";
 import { MiniCard1 } from "./MiniCard1";
 import { MiniCard2 } from "./MiniCard2";
@@ -15,15 +14,15 @@ export const Content = () => {
       <MaxWidthWrapper className="relative z-20 pb-20 pt-20 md:pb-28 md:pt-40">
         <SectionHeadingSpacing>
           <SectionHeading>
-            Show the people
+            Master Machine Learning
             <br />
             <span className="bg-gradient-to-br from-blue-400 to-blue-700 bg-clip-text text-transparent">
-              what makes you great
+              through Interactive Visualization
             </span>
           </SectionHeading>
           <SectionSubheading>
-            Here's a good way to show some high levels pros as to what your
-            product does and for who.
+            Explore complex ML algorithms, tackle real-world challenges, and build intuition 
+            with our cutting-edge learning platform.
           </SectionSubheading>
         </SectionHeadingSpacing>
 

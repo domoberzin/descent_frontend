@@ -20,11 +20,12 @@ export const Tower = () => {
       <Card>
         <PulseLine />
 
-        <CalloutChip>Callout #1</CalloutChip>
-        <p className="mb-2 text-2xl">Show your product</p>
+        <CalloutChip>Interactive Learning</CalloutChip>
+        <p className="mb-2 text-2xl">Visualize ML Algorithms</p>
         <p className="mb-8 text-zinc-400">
-          These cards are a great place to give a high level break down of what
-          your website is about. Try to talk about benefits instead of features.
+          Explore complex machine learning concepts through interactive visualizations. 
+          Our platform brings algorithms to life, helping you understand the inner workings 
+          of ML models and improve your intuition for data science.
         </p>
 
         <CornerBlur />
