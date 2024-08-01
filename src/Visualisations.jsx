@@ -104,8 +104,8 @@ export default function Visualisations() {
   );
 
   return (
-    <Container fluid className="app-container p-8 mt-20">
-      <h1 className="text-3xl font-bold mb-6 text-center">
+    <Container fluid className="app-container p-8 mt-20 text-black">
+      <h1 className="text-3xl font-bold mb-6 text-center text-white">
         Machine Learning Visualizations
       </h1>
 
