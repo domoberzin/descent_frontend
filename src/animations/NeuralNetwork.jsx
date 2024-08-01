@@ -1,90 +1,25 @@
 import React, { useState, useCallback, useEffect } from "react";
 
 export default function NeuralNetwork() {
-  const nn = useNeuralNetwork([3, 4, 2]);
-
-  React.useEffect(() => {
-    nn.initializeNetwork();
-  }, [nn.layers]);
-
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Neural Network Simulator</h1>
-      <div className="mb-4 space-x-2">
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={nn.addLayer}
-        >
-          Add Layer
-        </button>
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded"
-          onClick={nn.removeLayer}
-        >
-          Remove Layer
-        </button>
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded"
-          onClick={nn.toggleDirection}
-        >
-          {nn.direction === "forward"
-            ? "Switch to Backward"
-            : "Switch to Forward"}
-        </button>
-        <button
-          className="bg-purple-500 text-white px-4 py-2 rounded"
-          onClick={nn.simulateActivation}
-        >
-          Simulate Activation
-        </button>
-        <select
-          className="bg-gray-200 px-4 py-2 rounded"
-          value={nn.activationFunction}
-          onChange={(e) => nn.setActivationFunction(e.target.value)}
-        >
-          <option value="sigmoid">Sigmoid</option>
-          <option value="relu">ReLU</option>
-          <option value="tanh">Tanh</option>
-        </select>
-      </div>
-      <div className="flex items-start">
-        {nn.layers.map((layerSize, index) => (
-          <React.Fragment key={index}>
-            <Layer
-              size={layerSize}
-              activations={nn.activations[index]}
-              onChange={(value) => nn.handleLayerChange(index, value)}
-            />
-            {index < nn.layers.length - 1 && nn.weights[index] && (
-              <Connections
-                fromSize={nn.layers[index]}
-                toSize={nn.layers[index + 1]}
-                weights={nn.weights[index]}
-                direction={nn.direction}
-                updateWeight={(from, to, value) =>
-                  nn.updateWeight(index, from, to, value)
-                }
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const useNeuralNetwork = (initialLayers) => {
-  const [layers, setLayers] = useState(initialLayers);
+  const [layers, setLayers] = useState([3, 4, 2]);
   const [activations, setActivations] = useState([]);
   const [weights, setWeights] = useState([]);
+  const [biases, setBiases] = useState([]);
   const [direction, setDirection] = useState("forward");
   const [activationFunction, setActivationFunction] = useState("sigmoid");
+  const [currentStep, setCurrentStep] = useState(0);
+  const [dropoutRate, setDropoutRate] = useState(0.5);
+  const [useBatchNorm, setUseBatchNorm] = useState(false);
+  const [batchNormParams, setBatchNormParams] = useState([]);
+  const [gradients, setGradients] = useState({ weights: [], biases: [] });
 
   const initializeNetwork = useCallback(() => {
     const newActivations = layers.map((layerSize) => Array(layerSize).fill(0));
     setActivations(newActivations);
 
     const newWeights = [];
+    const newBiases = [];
+    const newBatchNormParams = [];
     for (let i = 0; i < layers.length - 1; i++) {
       newWeights.push(
         Array(layers[i])
@@ -95,70 +30,36 @@ const useNeuralNetwork = (initialLayers) => {
               .map(() => Math.random() * 2 - 1)
           )
       );
+      newBiases.push(Array(layers[i + 1]).fill(0));
+      newBatchNormParams.push({
+        gamma: Array(layers[i + 1]).fill(1),
+        beta: Array(layers[i + 1]).fill(0),
+        movingMean: Array(layers[i + 1]).fill(0),
+        movingVariance: Array(layers[i + 1]).fill(1),
+      });
     }
     setWeights(newWeights);
+    setBiases(newBiases);
+    setBatchNormParams(newBatchNormParams);
+    setGradients({ weights: [], biases: [] });
   }, [layers]);
 
-  // Initialize the network when the hook is first called
   useEffect(() => {
     initializeNetwork();
-  }, []);
+  }, [initializeNetwork]);
 
   const handleLayerChange = (index, value) => {
     const newLayers = [...layers];
     const newSize = Math.max(parseInt(value) || 1, 1);
     newLayers[index] = newSize;
-
-    const newWeights = [...weights];
-    if (index > 0) {
-      // Update incoming weights
-      newWeights[index - 1] = newWeights[index - 1].map((row) => {
-        const newRow = [...row];
-        while (newRow.length < newSize) newRow.push(Math.random() * 2 - 1);
-        return newRow.slice(0, newSize);
-      });
-    }
-    if (index < newLayers.length - 1) {
-      // Update outgoing weights
-      newWeights[index] = Array(newSize)
-        .fill()
-        .map(() =>
-          Array(newLayers[index + 1])
-            .fill()
-            .map(() => Math.random() * 2 - 1)
-        );
-    }
-
     setLayers(newLayers);
-    setWeights(newWeights);
-
-    // Reinitialize activations
-    const newActivations = newLayers.map((layerSize) =>
-      Array(layerSize).fill(0)
-    );
-    setActivations(newActivations);
+    initializeNetwork();
   };
 
   const addLayer = () => setLayers([...layers, 1]);
   const removeLayer = () => layers.length > 2 && setLayers(layers.slice(0, -1));
   const toggleDirection = () =>
     setDirection(direction === "forward" ? "backward" : "forward");
-
-  const simulateActivation = () => {
-    const newActivations = [layers.map(() => Math.random())];
-    for (let i = 1; i < layers.length; i++) {
-      const layerActivations = [];
-      for (let j = 0; j < layers[i]; j++) {
-        let sum = 0;
-        for (let k = 0; k < layers[i - 1]; k++) {
-          sum += newActivations[i - 1][k] * weights[i - 1][k][j];
-        }
-        layerActivations.push(applyActivationFunction(sum));
-      }
-      newActivations.push(layerActivations);
-    }
-    setActivations(newActivations);
-  };
 
   const applyActivationFunction = (x) => {
     switch (activationFunction) {
@@ -173,30 +74,262 @@ const useNeuralNetwork = (initialLayers) => {
     }
   };
 
+  const applyActivationFunctionDerivative = (x) => {
+    switch (activationFunction) {
+      case "sigmoid":
+        const sig = applyActivationFunction(x);
+        return sig * (1 - sig);
+      case "relu":
+        return x > 0 ? 1 : 0;
+      case "tanh":
+        const tanh = Math.tanh(x);
+        return 1 - tanh * tanh;
+      default:
+        return 1;
+    }
+  };
+
+  const applyDropout = (layerActivations) => {
+    return layerActivations.map((a) =>
+      Math.random() > dropoutRate ? a / (1 - dropoutRate) : 0
+    );
+  };
+
+  const applyBatchNorm = (layerIndex, layerActivations) => {
+    const { gamma, beta, movingMean, movingVariance } =
+      batchNormParams[layerIndex];
+    const mean =
+      layerActivations.reduce((sum, a) => sum + a, 0) / layerActivations.length;
+    const variance =
+      layerActivations.reduce((sum, a) => sum + Math.pow(a - mean, 2), 0) /
+      layerActivations.length;
+
+    // Update moving average and variance
+    const momentum = 0.9;
+    batchNormParams[layerIndex].movingMean =
+      momentum * movingMean + (1 - momentum) * mean;
+    batchNormParams[layerIndex].movingVariance =
+      momentum * movingVariance + (1 - momentum) * variance;
+
+    return layerActivations.map(
+      (a, i) => gamma[i] * ((a - mean) / Math.sqrt(variance + 1e-8)) + beta[i]
+    );
+  };
+
+  const stepForward = () => {
+    if (currentStep < layers.length - 1) {
+      const newActivations = [...activations];
+      const layerIndex = currentStep;
+      let layerInput = newActivations[layerIndex];
+
+      if (useBatchNorm && layerIndex > 0) {
+        layerInput = applyBatchNorm(layerIndex - 1, layerInput);
+      }
+
+      if (dropoutRate > 0) {
+        layerInput = applyDropout(layerInput);
+      }
+
+      for (let j = 0; j < layers[layerIndex + 1]; j++) {
+        let sum = biases[layerIndex][j];
+        for (let k = 0; k < layers[layerIndex]; k++) {
+          sum += layerInput[k] * weights[layerIndex][k][j];
+        }
+        newActivations[layerIndex + 1][j] = applyActivationFunction(sum);
+      }
+
+      setActivations(newActivations);
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const stepBackward = () => {
+    if (currentStep > 0) {
+      const newGradients = {
+        weights: [...gradients.weights],
+        biases: [...gradients.biases],
+      };
+      const layerIndex = currentStep - 1;
+
+      // Initialize gradients if not exist
+      if (!newGradients.weights[layerIndex]) {
+        newGradients.weights[layerIndex] = weights[layerIndex].map((row) =>
+          row.map(() => 0)
+        );
+        newGradients.biases[layerIndex] = biases[layerIndex].map(() => 0);
+      }
+
+      // Compute output layer gradients
+      if (layerIndex === layers.length - 2) {
+        for (let j = 0; j < layers[layerIndex + 1]; j++) {
+          const error = activations[layerIndex + 1][j] - (j === 0 ? 1 : 0); // Assuming binary classification
+          const delta =
+            error *
+            applyActivationFunctionDerivative(activations[layerIndex + 1][j]);
+
+          newGradients.biases[layerIndex][j] += delta;
+          for (let k = 0; k < layers[layerIndex]; k++) {
+            newGradients.weights[layerIndex][k][j] +=
+              activations[layerIndex][k] * delta;
+          }
+        }
+      } else {
+        // Compute hidden layer gradients
+        for (let j = 0; j < layers[layerIndex + 1]; j++) {
+          let delta = 0;
+          for (let k = 0; k < layers[layerIndex + 2]; k++) {
+            delta +=
+              weights[layerIndex + 1][j][k] *
+              newGradients.biases[layerIndex + 1][k];
+          }
+          delta *= applyActivationFunctionDerivative(
+            activations[layerIndex + 1][j]
+          );
+
+          newGradients.biases[layerIndex][j] += delta;
+          for (let k = 0; k < layers[layerIndex]; k++) {
+            newGradients.weights[layerIndex][k][j] +=
+              activations[layerIndex][k] * delta;
+          }
+        }
+      }
+
+      setGradients(newGradients);
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const resetPropagation = () => {
+    setCurrentStep(0);
+    initializeNetwork();
+  };
+
+  const randomActivation = () => {
+    const newActivations = layers.map((layerSize) =>
+      Array(layerSize)
+        .fill()
+        .map(() => Math.random())
+    );
+    setActivations(newActivations);
+    setCurrentStep(0);
+    setGradients({ weights: [], biases: [] });
+  };
+
   const updateWeight = (layerIndex, fromNode, toNode, value) => {
     const newWeights = [...weights];
     newWeights[layerIndex][fromNode][toNode] = parseFloat(value);
     setWeights(newWeights);
   };
 
-  return {
-    layers,
-    activations,
-    weights,
-    direction,
-    activationFunction,
-    initializeNetwork,
-    handleLayerChange,
-    addLayer,
-    removeLayer,
-    toggleDirection,
-    simulateActivation,
-    setActivationFunction,
-    updateWeight,
-  };
-};
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Neural Network Simulator</h1>
+      <div className="mb-4 space-x-2">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={addLayer}
+        >
+          Add Layer
+        </button>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded"
+          onClick={removeLayer}
+        >
+          Remove Layer
+        </button>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded"
+          onClick={toggleDirection}
+        >
+          {direction === "forward" ? "Switch to Backward" : "Switch to Forward"}
+        </button>
+        <button
+          className="bg-purple-500 text-white px-4 py-2 rounded"
+          onClick={randomActivation}
+        >
+          Random Activation
+        </button>
+        <button
+          className="bg-yellow-500 text-white px-4 py-2 rounded"
+          onClick={stepForward}
+          disabled={currentStep >= layers.length - 1}
+        >
+          Step Forward
+        </button>
+        <button
+          className="bg-indigo-500 text-white px-4 py-2 rounded"
+          onClick={stepBackward}
+          disabled={currentStep <= 0}
+        >
+          Step Backward
+        </button>
+        <button
+          className="bg-gray-500 text-white px-4 py-2 rounded"
+          onClick={resetPropagation}
+        >
+          Reset
+        </button>
+        <select
+          className="bg-gray-200 px-4 py-2 rounded"
+          value={activationFunction}
+          onChange={(e) => setActivationFunction(e.target.value)}
+        >
+          <option value="sigmoid">Sigmoid</option>
+          <option value="relu">ReLU</option>
+          <option value="tanh">Tanh</option>
+        </select>
+        <label className="inline-flex items-center">
+          Dropout Rate:
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={dropoutRate}
+            onChange={(e) => setDropoutRate(parseFloat(e.target.value))}
+            className="ml-2"
+          />
+          <span className="ml-2">{dropoutRate.toFixed(1)}</span>
+        </label>
+        <label className="inline-flex items-center ml-4">
+          Use Batch Norm:
+          <input
+            type="checkbox"
+            checked={useBatchNorm}
+            onChange={(e) => setUseBatchNorm(e.target.checked)}
+            className="ml-2"
+          />
+        </label>
+      </div>
+      <div className="flex items-start">
+        {layers.map((layerSize, index) => (
+          <React.Fragment key={index}>
+            <Layer
+              size={layerSize}
+              activations={activations[index]}
+              gradients={gradients.biases[index]}
+              onChange={(value) => handleLayerChange(index, value)}
+            />
+            {index < layers.length - 1 && weights[index] && (
+              <Connections
+                fromSize={layers[index]}
+                toSize={layers[index + 1]}
+                weights={weights[index]}
+                gradients={gradients.weights[index]}
+                direction={direction}
+                updateWeight={(from, to, value) =>
+                  updateWeight(index, from, to, value)
+                }
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-const Layer = ({ size, activations, onChange }) => {
+const Layer = ({ size, activations, gradients, onChange }) => {
   return (
     <div className="flex flex-col items-center mx-2">
       <input
@@ -212,9 +345,13 @@ const Layer = ({ size, activations, onChange }) => {
           .map((_, i) => (
             <div
               key={i}
-              className="w-8 h-8 bg-blue-500 rounded-full mb-2 flex items-center justify-center text-white text-xs"
+              className="w-12 h-12 bg-blue-500 rounded-full mb-2 flex flex-col items-center justify-center text-white text-xs"
+              title={`Activation: ${activations?.[i]?.toFixed(4)}\nGradient: ${
+                gradients?.[i]?.toFixed(4) || "N/A"
+              }`}
             >
-              {activations && activations[i]?.toFixed(2)}
+              <div>{activations?.[i]?.toFixed(2) || "0.00"}</div>
+              <div>{gradients?.[i]?.toFixed(2) || "N/A"}</div>
             </div>
           ))}
       </div>
@@ -226,6 +363,7 @@ const Connections = ({
   fromSize,
   toSize,
   weights,
+  gradients,
   direction,
   updateWeight,
 }) => {
@@ -240,9 +378,9 @@ const Connections = ({
               .map((_, j) => (
                 <g key={`${i}-${j}`}>
                   <line
-                    x1="0%"
+                    x1={`${5}%`}
                     y1={`${((i + 1) * 100) / (fromSize + 1)}%`}
-                    x2="100%"
+                    x2={`${95}%`}
                     y2={`${((j + 1) * 100) / (toSize + 1)}%`}
                     stroke={direction === "forward" ? "blue" : "red"}
                     strokeWidth="1"
@@ -257,11 +395,14 @@ const Connections = ({
                   >
                     <tspan>{weights[i][j].toFixed(2)}</tspan>
                     <tspan dy="10" x="50%">
+                      {gradients?.[i]?.[j]?.toFixed(2) || "N/A"}
+                    </tspan>
+                    <tspan dy="20" x="50%">
                       <input
                         type="number"
                         value={weights[i][j].toFixed(2)}
                         onChange={(e) => updateWeight(i, j, e.target.value)}
-                        className="w-12 p-0 border rounded text-center"
+                        className="w-16 p-0 border rounded text-center"
                         step="0.1"
                       />
                     </tspan>

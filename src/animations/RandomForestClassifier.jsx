@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function RFC() {
   const [numTrees, setNumTrees] = useState(5);
@@ -9,6 +9,13 @@ export default function RFC() {
     { name: "Feature 3", value: 50 },
   ]);
   const [prediction, setPrediction] = useState(null);
+  const [forest, setForest] = useState([]);
+  const [treeVotes, setTreeVotes] = useState([]);
+  const [selectedTree, setSelectedTree] = useState(null);
+
+  useEffect(() => {
+    generateForest();
+  }, [numTrees, maxDepth]);
 
   const generateRandomTree = (depth = 0) => {
     if (depth >= maxDepth) {
@@ -30,6 +37,13 @@ export default function RFC() {
     };
   };
 
+  const generateForest = () => {
+    const newForest = Array(numTrees)
+      .fill()
+      .map(() => generateRandomTree());
+    setForest(newForest);
+  };
+
   const classifyWithTree = (tree, data) => {
     if (tree.type === "leaf") {
       return tree.value;
@@ -44,9 +58,6 @@ export default function RFC() {
   };
 
   const runRandomForest = () => {
-    const forest = Array(numTrees)
-      .fill()
-      .map(() => generateRandomTree());
     const predictions = forest.map((tree) => classifyWithTree(tree, features));
     const finalPrediction = predictions.reduce((acc, val) => {
       acc[val] = (acc[val] || 0) + 1;
@@ -55,21 +66,52 @@ export default function RFC() {
     setPrediction(
       Object.entries(finalPrediction).sort((a, b) => b[1] - a[1])[0][0]
     );
+    setTreeVotes(
+      predictions.map((pred, index) => ({
+        name: `Tree ${index + 1}`,
+        vote: pred,
+      }))
+    );
+  };
+
+  const renderTree = (node, depth = 0) => {
+    const indent = "  ".repeat(depth);
+    if (node.type === "leaf") {
+      return `${indent}Leaf: ${node.value}\n`;
+    }
+    return (
+      `${indent}${node.feature} < ${node.threshold.toFixed(2)}\n` +
+      `${renderTree(node.left, depth + 1)}` +
+      `${renderTree(node.right, depth + 1)}`
+    );
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">
+    <div
+      style={{
+        fontFamily: "Arial, sans-serif",
+        maxWidth: "800px",
+        margin: "0 auto",
+        padding: "20px",
+      }}
+    >
+      <h2 style={{ fontSize: "24px", marginBottom: "20px" }}>
         Random Forest Classifier Visualization
       </h2>
-      <div className="mb-4">
-        <label className="mr-4">
+      <div
+        style={{
+          marginBottom: "20px",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <label>
           Number of Trees:
           <input
             type="number"
             value={numTrees}
             onChange={(e) => setNumTrees(Math.max(1, parseInt(e.target.value)))}
-            className="ml-2 w-20 border rounded px-2 py-1"
+            style={{ marginLeft: "10px", width: "60px" }}
             min="1"
           />
         </label>
@@ -79,14 +121,27 @@ export default function RFC() {
             type="number"
             value={maxDepth}
             onChange={(e) => setMaxDepth(Math.max(1, parseInt(e.target.value)))}
-            className="ml-2 w-20 border rounded px-2 py-1"
+            style={{ marginLeft: "10px", width: "60px" }}
             min="1"
           />
         </label>
+        <button
+          onClick={generateForest}
+          style={{
+            padding: "5px 10px",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Regenerate Forest
+        </button>
       </div>
-      <div className="mb-4">
+      <div style={{ marginBottom: "20px" }}>
         {features.map((feature, index) => (
-          <div key={index} className="mb-2">
+          <div key={index} style={{ marginBottom: "10px" }}>
             <label>
               {feature.name}:
               <input
@@ -99,23 +154,113 @@ export default function RFC() {
                   newFeatures[index].value = parseInt(e.target.value);
                   setFeatures(newFeatures);
                 }}
-                className="ml-2"
+                style={{ marginLeft: "10px", width: "200px" }}
               />
-              <span className="ml-2">{feature.value}</span>
+              <span style={{ marginLeft: "10px" }}>{feature.value}</span>
             </label>
           </div>
         ))}
       </div>
       <button
         onClick={runRandomForest}
-        className="px-4 py-2 bg-green-500 text-white rounded"
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#008CBA",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
       >
         Run Random Forest
       </button>
       {prediction && (
-        <p className="mt-4">
+        <p style={{ marginTop: "20px", fontSize: "18px" }}>
           Prediction: <strong>{prediction}</strong>
         </p>
+      )}
+      {treeVotes.length > 0 && (
+        <div style={{ marginTop: "20px" }}>
+          <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>Tree Votes</h3>
+          <div
+            style={{ display: "flex", height: "200px", alignItems: "flex-end" }}
+          >
+            {treeVotes.map((vote, index) => (
+              <div
+                key={index}
+                style={{
+                  width: `${100 / treeVotes.length}%`,
+                  height: `${vote.vote === "Class A" ? "100%" : "50%"}`,
+                  backgroundColor:
+                    vote.vote === "Class A" ? "#4CAF50" : "#FFA500",
+                  margin: "0 2px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+                onClick={() => setSelectedTree(index)}
+              >
+                <div
+                  style={{
+                    padding: "5px",
+                    backgroundColor: "rgba(255,255,255,0.8)",
+                  }}
+                >
+                  {vote.vote}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "5px",
+            }}
+          >
+            {treeVotes.map((vote, index) => (
+              <div
+                key={index}
+                style={{
+                  width: `${100 / treeVotes.length}%`,
+                  textAlign: "center",
+                  fontSize: "12px",
+                }}
+              >
+                Tree {index + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {selectedTree !== null && (
+        <div style={{ marginTop: "20px" }}>
+          <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>
+            Tree {selectedTree + 1} Structure
+          </h3>
+          <div
+            style={{
+              maxHeight: "200px",
+              overflowY: "auto",
+              backgroundColor: "#f0f0f0",
+              padding: "10px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          >
+            <pre
+              style={{
+                whiteSpace: "pre-wrap",
+                fontFamily: "monospace",
+                margin: 0,
+              }}
+            >
+              {renderTree(forest[selectedTree])}
+            </pre>
+          </div>
+        </div>
       )}
     </div>
   );
