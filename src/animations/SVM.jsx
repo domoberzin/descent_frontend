@@ -11,6 +11,12 @@ export default function SVM() {
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+  const [selectedPoint, setSelectedPoint] = useState(null);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const canvasSize = 400;
   const gridSize = 20;
@@ -51,13 +57,19 @@ export default function SVM() {
     points.forEach((point) => {
       ctx.fillStyle = getColorForClass(point.class);
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+      ctx.arc(
+        ((point.x + 1) * canvasSize) / 2,
+        ((1 - point.y) * canvasSize) / 2,
+        5,
+        0,
+        2 * Math.PI
+      );
       ctx.fill();
     });
 
     // Draw SVM line
     if (svmLine) {
-      ctx.strokeStyle = "green";
+      ctx.strokeStyle = "black";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(svmLine.x1, svmLine.y1);
@@ -68,7 +80,6 @@ export default function SVM() {
 
   const draw3D = (ctx) => {
     const points3D = transformPoints(points);
-    const planePoints = svmPlane ? generatePlanePoints(svmPlane) : [];
 
     // Draw transformed grid
     ctx.strokeStyle = "#e0e0e0";
@@ -97,17 +108,20 @@ export default function SVM() {
     }
 
     // Draw SVM plane
-    if (planePoints.length > 0) {
-      ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
-      ctx.lineWidth = 1;
+    if (svmPlane) {
+      const planePoints = generatePlanePoints(svmPlane);
+      ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
+      ctx.beginPath();
+      const firstPoint = transformPoint(planePoints[0][0]);
+      ctx.moveTo(firstPoint.x, firstPoint.y);
       for (let i = 0; i < planePoints.length; i++) {
         for (let j = 0; j < planePoints[i].length; j++) {
           const point = transformPoint(planePoints[i][j]);
-          ctx.beginPath();
-          ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
-          ctx.fill();
+          ctx.lineTo(point.x, point.y);
         }
       }
+      ctx.closePath();
+      ctx.fill();
     }
 
     // Draw points
@@ -164,20 +178,40 @@ export default function SVM() {
   };
 
   const handleCanvasClick = (event) => {
-    if (isDragging) return;
+    if (isDragging || showContextMenu) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const z = is3D ? Math.random() * 2 - 1 : 0;
     const newPoint = {
       x: (x / canvasSize) * 2 - 1,
       y: -(y / canvasSize) * 2 + 1,
-      z,
+      z: is3D ? 0 : 0, // Set z to 0 for both 2D and 3D
       class: currentClass,
     };
     setPoints([...points, newPoint]);
     updateSVM([...points, newPoint]);
+  };
+
+  const handleCanvasContextMenu = (event) => {
+    event.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const clickedPoint = points.find((point) => {
+      const screenPoint = transformPoint(point);
+      const distance = Math.sqrt(
+        Math.pow(screenPoint.x - x, 2) + Math.pow(screenPoint.y - y, 2)
+      );
+      return distance < 10; // Adjust this value to change the click sensitivity
+    });
+
+    if (clickedPoint) {
+      setSelectedPoint(clickedPoint);
+      setShowContextMenu(true);
+      setContextMenuPosition({ x: event.clientX, y: event.clientY });
+    }
   };
 
   const handleMouseDown = (event) => {
@@ -251,7 +285,6 @@ export default function SVM() {
       const m = (line.y2 - line.y1) / (line.x2 - line.x1);
       const b = line.y1 - m * line.x1;
       setEquation(`y = ${m.toFixed(2)}x + ${b.toFixed(2)}`);
-      // ...
     } else {
       // 3D plane calculation (simplified)
       const centroid = getCenterPoint(currentPoints);
@@ -309,6 +342,19 @@ export default function SVM() {
     setIs3D(false);
   };
 
+  const handleCoordinateChange = (coord, value) => {
+    const updatedPoints = points.map((point) =>
+      point === selectedPoint ? { ...point, [coord]: parseFloat(value) } : point
+    );
+    setPoints(updatedPoints);
+    updateSVM(updatedPoints);
+  };
+
+  const closeContextMenu = () => {
+    setShowContextMenu(false);
+    setSelectedPoint(null);
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">SVM Visualization</h2>
@@ -341,21 +387,70 @@ export default function SVM() {
           Reset
         </button>
       </div>
-      <canvas
-        ref={canvasRef}
-        width={canvasSize}
-        height={canvasSize}
-        onClick={handleCanvasClick}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        className="border border-gray-300 cursor-crosshair"
-      />
+      <div className="relative">
+        <canvas
+          ref={canvasRef}
+          width={canvasSize}
+          height={canvasSize}
+          onClick={handleCanvasClick}
+          onContextMenu={handleCanvasContextMenu}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          className="border border-gray-300 cursor-crosshair"
+        />
+        {showContextMenu && (
+          <div
+            className="absolute bg-white border border-gray-300 p-2 rounded shadow"
+            style={{ left: contextMenuPosition.x, top: contextMenuPosition.y }}
+          >
+            <div className="mb-2">
+              <label className="mr-2">X:</label>
+              <input
+                type="number"
+                value={selectedPoint.x}
+                onChange={(e) => handleCoordinateChange("x", e.target.value)}
+                className="border rounded px-1 w-20"
+                step="0.1"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="mr-2">Y:</label>
+              <input
+                type="number"
+                value={selectedPoint.y}
+                onChange={(e) => handleCoordinateChange("y", e.target.value)}
+                className="border rounded px-1 w-20"
+                step="0.1"
+              />
+            </div>
+            {is3D && (
+              <div className="mb-2">
+                <label className="mr-2">Z:</label>
+                <input
+                  type="number"
+                  value={selectedPoint.z}
+                  onChange={(e) => handleCoordinateChange("z", e.target.value)}
+                  className="border rounded px-1 w-20"
+                  step="0.1"
+                />
+              </div>
+            )}
+            <button
+              onClick={closeContextMenu}
+              className="bg-blue-500 text-white px-2 py-1 rounded"
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </div>
       {equation && <p className="mt-2">Equation: {equation}</p>}
       <p className="mt-2">
         Click on the canvas to add points. Use the dropdown to select the class.
-        {is3D && " In 3D mode, click and drag to rotate the view."}
+        {is3D &&
+          " In 3D mode, click and drag to rotate the view. Right-click on points to edit coordinates."}
       </p>
     </div>
   );
