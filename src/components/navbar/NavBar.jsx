@@ -47,7 +47,7 @@ export const NavBar = () => {
           <div className="flex items-center gap-12">
             <div className="flex gap-5 items-center justify-center">
               <NavLogo />
-                <NavLink href="/"><h1 className="text-lg">DescentAI   </h1></NavLink>
+                <NavLink href="/"><h1 className="text-lg">DescentAI</h1></NavLink>
                 {/* <NavLink to="/"></NavLink> */}
             </div>
             <div className="hidden md:block">
