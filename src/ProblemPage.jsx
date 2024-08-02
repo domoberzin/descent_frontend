@@ -19,7 +19,8 @@ import TestCaseResult from "./components/TestCaseResult";
 import ErrorResult from "./components/ErrorResult";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { API_URL } from "./config";
-import LinearRegression from "./animations/LinearRegression"; // Import the LinearRegression component
+import LinearRegression from "./animations/LinearRegression";
+import Canvas from "./animations/Canvas";
 import NeuralNetwork from "./animations/NeuralNetwork";
 
 const ProblemPage = () => {
@@ -106,48 +107,6 @@ const ProblemPage = () => {
       });
   };
 
-  const addPoint = (x, y) => {
-    const newPoints = [...points, { x, y }];
-    setPoints(newPoints);
-    calculateRegression(newPoints);
-  };
-
-  const calculateRegression = (newPoints) => {
-    if (newPoints.length < 2) {
-      setRegressionLine(null);
-      return;
-    }
-
-    const xMean =
-      newPoints.reduce((sum, point) => sum + point.x, 0) / newPoints.length;
-    const yMean =
-      newPoints.reduce((sum, point) => sum + point.y, 0) / newPoints.length;
-
-    const numerator = newPoints.reduce(
-      (sum, point) => sum + (point.x - xMean) * (point.y - yMean),
-      0
-    );
-    const denominator = newPoints.reduce(
-      (sum, point) => sum + (point.x - xMean) ** 2,
-      0
-    );
-    const slope = numerator / denominator;
-    const yIntercept = yMean - slope * xMean;
-
-    setRegressionLine({ slope, yIntercept });
-  };
-
-  const handleReset = () => {
-    setPoints([]);
-    setRegressionLine(null);
-  };
-
-  const handleUndo = () => {
-    const newPoints = points.slice(0, -1);
-    setPoints(newPoints);
-    calculateRegression(newPoints);
-  };
-
   if (!problem) {
     return <div>Loading...</div>;
   }
@@ -190,23 +149,14 @@ const ProblemPage = () => {
               {showLearn && topic != "Neural Networks" && (
                 <Card className="mt-4">
                   <Card.Body>
-                    <LinearRegression
-                      points={points}
-                      addPoint={addPoint}
-                      regressionLine={regressionLine}
-                    />
-                    <div className="buttons mt-3">
-                      <Button
-                        variant="outline-danger"
-                        onClick={handleReset}
-                        className="mr-2"
-                      >
-                        Reset
-                      </Button>
-                      <Button variant="outline-warning" onClick={handleUndo}>
-                        Undo
-                      </Button>
-                    </div>
+                    <Canvas 
+                      points={[]}
+                      addPoint={() => {}}
+                      drawExtra={() => {}}
+                      title="Interactive Linear Regression"
+                    >
+                      <LinearRegression />
+                    </Canvas>
                   </Card.Body>
                 </Card>
               )}

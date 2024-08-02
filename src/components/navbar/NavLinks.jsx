@@ -4,9 +4,9 @@ import { NavLink } from "./NavLink";
 export const NavLinks = () => {
   return (
     <ul className="flex gap-3 text-zinc-400 md:gap-9">
-      <li>
+      {/* <li>
         <NavLink href="/">Home</NavLink>
-      </li>
+      </li> */}
       <li>
         <NavLink href="/problems">Problems</NavLink>
       </li>
