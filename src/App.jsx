@@ -4,15 +4,14 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./Layout";
 import ProblemsList from "./ProblemsList";
 import ProblemPage from "./ProblemPage";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import Contact from "./Contact";
 import Submission from "./Submission";
 import Home from "./HomePage";
 import Visualisations from "./Visualisations";
+import 'firebaseui/dist/firebaseui.css';
 
 const App = () => {
   return (
-    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
       <div className="bg-black min-h-screen text-white">
         <Router>
           <Layout>
@@ -27,7 +26,6 @@ const App = () => {
           </Layout>
         </Router>
       </div>
-    </GoogleOAuthProvider>
   );
 };
 
