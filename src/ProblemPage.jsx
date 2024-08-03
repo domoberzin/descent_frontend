@@ -216,7 +216,7 @@ const ProblemPage = () => {
                   />
                 ) : (
                   <div>
-                    <h5>Past Submissions</h5>
+                    <Card.Title>Past Submissions</Card.Title>
                     <Table striped bordered hover>
                       <thead>
                         <tr>
