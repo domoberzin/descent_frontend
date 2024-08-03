@@ -20,7 +20,7 @@ const SubmissionDetails = ({ submission, onBack }) => {
   return (
     <div>
       <Button variant="link" onClick={onBack}>&larr; Back to submissions</Button>
-      <h5>Submission Details</h5>
+    <Card.Title>Submission Details</Card.Title>
       <Card className="mb-3">
         <Card.Body>
           <Card.Title>Overview</Card.Title>

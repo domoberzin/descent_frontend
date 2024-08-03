@@ -173,23 +173,24 @@ const ProblemPage = () => {
         cursor="col-resize"
       >
         <div className="problem-column" style={{ minWidth: '300px' }}>
-          <Card className="h-100">
+          <Card>
             <Card.Body>
-
               <Tabs
                 activeKey={activeTab}
                 onSelect={(k) => setActiveTab(k)}
                 className="mb-3"
               >
                 <Tab eventKey="description" title="Description">
-                  <h3>{problem?.title}</h3>
-                  <p>{problem?.description}</p>
+                  <Card.Title>{problem?.title}</Card.Title>
+                  <Card.Body>{problem?.description}</Card.Body>
+                  <div className="buttons-container mt-3">
                   <Button variant="secondary" onClick={() => setShowSolution(!showSolution)}>
                     {showSolution ? 'Hide Solution' : 'Show Solution'}
                   </Button>
                   <Button variant="primary" onClick={handleLearnClick}>
                     {showLearn ? 'Hide Learn' : 'Learn'}
                   </Button>
+                  </div>
                   {showSolution && <SolutionComponent solution={solution} />}
                   {showLearn && topic == "Neural Networks" && <NeuralNetwork />}
                   {showLearn && topic != "Neural Networks" && (
@@ -279,6 +280,10 @@ const ProblemPage = () => {
                   defaultLanguage="python"
                   defaultValue={code}
                   onChange={(value) => setCode(value)}
+                  options={{
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                  }}
                 />
               </div>
               {(errorMessage || testResults.length > 0) && (
