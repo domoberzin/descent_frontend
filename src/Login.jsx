@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom';
 import Cookies from 'js-cookie';
 import { API_URL } from './config';
 import firebase from './firebaseConfig';
+import { useAuth } from './components/AuthContext';
 
-const Login = ({ isModalOpen, toggleModal, user, setUser }) => {
+const Login = ({ isModalOpen, toggleModal }) => {
   const modalRef = useRef(null);
+  const { user, setUser } = useAuth(); // Use the auth context
 
   const fetchUserData = useCallback(async (token) => {
     try {
@@ -18,8 +20,8 @@ const Login = ({ isModalOpen, toggleModal, user, setUser }) => {
       });
       if (response.ok) {
         const userData = await response.json();
-        console.log('User data:', userData);
-        // Handle the user data (e.g., store it in state or context)
+        Cookies.set('access_token', userData.tokens.access.token, { expires: 7 });
+        Cookies.set('refresh_token', userData.tokens.refresh.token, { expires: 7 });
       } else {
         console.error('Failed to fetch user data');
       }

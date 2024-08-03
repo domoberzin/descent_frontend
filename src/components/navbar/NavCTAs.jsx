@@ -1,29 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SplashButton } from "../buttons/SplashButton";
 import { GhostButton } from "../buttons/GhostButton";
 import Login from "../../Login";
-import firebase from '../../firebaseConfig';
+import { useAuth } from '../AuthContext';
 
 export const NavCTAs = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged(user => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const { user, loading } = useAuth();
 
   const toggleLoginModal = () => {
     setIsLoginModalOpen(!isLoginModalOpen);
   };
 
   if (loading) {
-    return <div>Loading...</div>; // Or any loading indicator
+    return <div>Loading...</div>;
   }
 
   return (
@@ -53,8 +43,6 @@ export const NavCTAs = () => {
       <Login
         isModalOpen={isLoginModalOpen}
         toggleModal={toggleLoginModal}
-        user={user}
-        setUser={setUser}
       />
     </div>
   );

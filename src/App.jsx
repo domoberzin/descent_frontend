@@ -9,9 +9,11 @@ import Submission from "./Submission";
 import Home from "./HomePage";
 import Visualisations from "./Visualisations";
 import 'firebaseui/dist/firebaseui.css';
+import { AuthProvider } from "./components/AuthContext";
 
 const App = () => {
   return (
+    <AuthProvider>
       <div className="bg-black min-h-screen text-white">
         <Router>
           <Layout>
@@ -26,6 +28,7 @@ const App = () => {
           </Layout>
         </Router>
       </div>
+    </AuthProvider>
   );
 };
 

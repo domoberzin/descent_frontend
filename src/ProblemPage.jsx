@@ -11,6 +11,10 @@ import {
   Card,
   OverlayTrigger,
   Tooltip,
+  Tabs,
+  Tab,
+  Table,
+  Badge
 } from "react-bootstrap";
 import { motion } from "framer-motion";
 import SolutionComponent from "./components/Solution";
@@ -21,6 +25,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { API_URL } from "./config";
 import LinearRegression from "./animations/LinearRegression"; // Import the LinearRegression component
 import NeuralNetwork from "./animations/NeuralNetwork";
+import { useAuth } from "./components/AuthContext";
+import apiFetch from "./api";
+import SubmissionDetails from "./components/SubmissionDetails";
 
 const ProblemPage = () => {
   const { id } = useParams();
@@ -32,39 +39,71 @@ const ProblemPage = () => {
   const [solution, setSolution] = useState("");
   const [showSolution, setShowSolution] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [submissions, setSubmissions] = useState([]);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [activeTab, setActiveTab] = useState('description');
   const [showLearn, setShowLearn] = useState(false); // State to control the visibility of the LinearRegression component
   const [points, setPoints] = useState([]);
   const [regressionLine, setRegressionLine] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to check if the user is logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    axios
-      .get(`${API_URL}/v1/questions/${id}`)
+    setIsLoggedIn(user !== null);
+    if (user) {
+      fetchSubmissions();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    apiFetch(`/v1/questions/${id}`)
       .then((response) => {
-        setProblem(response.data);
-        setCode(response.data.boilerplate);
-        setTopic(response.data.topic);
-        setSolution(response.data.solution);
+        console.log(response);
+        setProblem(response);
+        setCode(response.boilerplate);
+        setTopic(response.topic);
+        setSolution(response.solution);
       })
       .catch((error) => {
         console.error("There was an error fetching the problem!", error);
       });
   }, [id]);
 
+  const fetchSubmissions = async () => {
+    try {
+      const data = await apiFetch(`/v1/submit?problem_id=${id}`);
+      setSubmissions(data);
+    } catch (error) {
+      console.error('Error fetching submissions:', error);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'pending':
+        return <Badge bg="warning">Pending</Badge>;
+      case 'completed':
+        return <Badge bg="success">Completed</Badge>;
+      default:
+        return <Badge bg="secondary">{status}</Badge>;
+    }
+  };
+
+
   const handleSubmit = async () => {
     try {
-      const response = await fetch(`${API_URL}/v1/submit/`, {
+
+      const data = await apiFetch(`/v1/submit/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           questionId: String(id),
           code: code,
           language: "python",
         }),
       });
-      const data = await response.json();
+
+      console.log(data);
+
       if (data.error) {
         setErrorMessage(data.error);
         setTestResults([]);
@@ -84,6 +123,8 @@ const ProblemPage = () => {
       setErrorMessage("An error occurred while fetching data.");
       setTestResults([]);
     }
+
+    fetchSubmissions();
   };
 
   const toggleSolution = () => {
@@ -92,6 +133,14 @@ const ProblemPage = () => {
 
   const handleLearnClick = () => {
     setShowLearn(!showLearn); // Toggle the visibility of the LinearRegression component
+  };
+
+  const handleSubmissionClick = (submission) => {
+    setSelectedSubmission(submission);
+  };
+
+  const handleBackToSubmissions = () => {
+    setSelectedSubmission(null);
   };
 
   const copyToClipboard = (text, setCopied) => {
@@ -164,52 +213,57 @@ const ProblemPage = () => {
         direction="horizontal"
         cursor="col-resize"
       >
-        <div className="problem-column" style={{ minWidth: "300px" }}>
+        <div className="problem-column" style={{ minWidth: '300px' }}>
           <Card className="h-100">
             <Card.Body>
-              <Card.Title className="mb-3">{problem.title}</Card.Title>
-              <Card.Text className="mb-3">{problem.description}</Card.Text>
-              <div className="buttons-container mt-3">
-                <Button
-                  variant="primary"
-                  className="mr-2"
-                  onClick={handleLearnClick}
-                >
-                  Learn
-                </Button>
-                <Button variant="secondary" onClick={toggleSolution}>
-                  {showSolution ? "Hide Solution" : "Show Solution"}
-                </Button>
-              </div>
-              {showSolution && (
-                <div className="solution-container mt-3">
-                  <SolutionComponent solution={solution} />
-                </div>
-              )}
-              {showLearn && topic == "Neural Networks" && <NeuralNetwork />}
-              {showLearn && topic != "Neural Networks" && (
-                <Card className="mt-4">
-                  <Card.Body>
-                    <LinearRegression
-                      points={points}
-                      addPoint={addPoint}
-                      regressionLine={regressionLine}
-                    />
-                    <div className="buttons mt-3">
-                      <Button
-                        variant="outline-danger"
-                        onClick={handleReset}
-                        className="mr-2"
-                      >
-                        Reset
-                      </Button>
-                      <Button variant="outline-warning" onClick={handleUndo}>
-                        Undo
-                      </Button>
-                    </div>
-                  </Card.Body>
-                </Card>
-              )}
+              <Tabs
+                activeKey={activeTab}
+                onSelect={(k) => setActiveTab(k)}
+                className="mb-3"
+              >
+                <Tab eventKey="description" title="Description">
+                  <h3>{problem?.title}</h3>
+                  <p>{problem?.description}</p>
+                  <Button variant="secondary" onClick={() => setShowSolution(!showSolution)}>
+                    {showSolution ? 'Hide Solution' : 'Show Solution'}
+                  </Button>
+                  {showSolution && <SolutionComponent solution={solution} />}
+                </Tab>
+                <Tab eventKey="submissions" title="Your Submissions">
+                {selectedSubmission ? (
+                  <SubmissionDetails
+                    submission={selectedSubmission}
+                    onBack={handleBackToSubmissions}
+                  />
+                ) : (
+                  <div>
+                    <h5>Past Submissions</h5>
+                    <Table striped bordered hover>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {submissions.map((sub) => (
+                          <tr 
+                            key={sub.id} 
+                            onClick={() => handleSubmissionClick(sub)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td>{sub.id.slice(-6)}</td>
+                            <td>{getStatusBadge(sub.status)}</td>
+                            <td>{new Date(sub.submissionTimestamp).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                )}
+              </Tab>
+              </Tabs>
             </Card.Body>
           </Card>
         </div>
