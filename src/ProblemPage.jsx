@@ -23,7 +23,8 @@ import TestCaseResult from "./components/TestCaseResult";
 import ErrorResult from "./components/ErrorResult";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { API_URL } from "./config";
-import LinearRegression from "./animations/LinearRegression"; // Import the LinearRegression component
+import LinearRegression from "./animations/LinearRegression";
+import Canvas from "./animations/Canvas";
 import NeuralNetwork from "./animations/NeuralNetwork";
 import { useAuth } from "./components/AuthContext";
 import apiFetch from "./api";
@@ -153,48 +154,6 @@ const ProblemPage = () => {
       .catch((err) => {
         console.error("Failed to copy: ", err);
       });
-  };
-
-  const addPoint = (x, y) => {
-    const newPoints = [...points, { x, y }];
-    setPoints(newPoints);
-    calculateRegression(newPoints);
-  };
-
-  const calculateRegression = (newPoints) => {
-    if (newPoints.length < 2) {
-      setRegressionLine(null);
-      return;
-    }
-
-    const xMean =
-      newPoints.reduce((sum, point) => sum + point.x, 0) / newPoints.length;
-    const yMean =
-      newPoints.reduce((sum, point) => sum + point.y, 0) / newPoints.length;
-
-    const numerator = newPoints.reduce(
-      (sum, point) => sum + (point.x - xMean) * (point.y - yMean),
-      0
-    );
-    const denominator = newPoints.reduce(
-      (sum, point) => sum + (point.x - xMean) ** 2,
-      0
-    );
-    const slope = numerator / denominator;
-    const yIntercept = yMean - slope * xMean;
-
-    setRegressionLine({ slope, yIntercept });
-  };
-
-  const handleReset = () => {
-    setPoints([]);
-    setRegressionLine(null);
-  };
-
-  const handleUndo = () => {
-    const newPoints = points.slice(0, -1);
-    setPoints(newPoints);
-    calculateRegression(newPoints);
   };
 
   if (!problem) {
