@@ -27,7 +27,9 @@ const refreshTokenAndReattemptRequest = async (error, endpoint, options) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ refresh_token }),
+        body: JSON.stringify({ 
+          refreshToken: refresh_token
+        }),
       });
 
       if (!refreshResponse.ok) {
@@ -35,20 +37,14 @@ const refreshTokenAndReattemptRequest = async (error, endpoint, options) => {
       }
 
       const data = await refreshResponse.json();
-      Cookies.set('access_token', data.access_token);
+      Cookies.set('access_token', data.access.token);
+      Cookies.set('refresh_token', data.refresh.token);
       isRefreshing = false;
-      onTokenRefreshed(data.access_token);
+      onTokenRefreshed(data.access.token);
     }
 
-    return new Promise(resolve => {
-      subscribeTokenRefresh((token) => {
-        options.headers['Authorization'] = `Bearer ${token}`;
-        resolve(apiFetch(endpoint, options));
-      });
-    });
+    return Cookies.get('access_token');
   } catch (refreshError) {
-    Cookies.remove('access_token');
-    Cookies.remove('refresh_token');
     throw refreshError;
   }
 };
@@ -77,7 +73,13 @@ const apiFetch = async (endpoint, options = {}) => {
 
     if (!response.ok) {
       if (response.status === 401) {
-        return refreshTokenAndReattemptRequest(response, endpoint, options);
+        const newToken = await refreshTokenAndReattemptRequest(response, endpoint, options);
+        headers['Authorization'] = `Bearer ${newToken}`;
+        fetchOptions.headers = headers;
+        const retry = await fetch(url, fetchOptions);
+        if (retry.ok) {
+          return await retry.json();
+        }
       }
 
       const errorCode = response.status;
