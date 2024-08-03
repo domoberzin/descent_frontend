@@ -2,12 +2,12 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCCZqHudnhfoO8zWxuYusxkH0kutSuC7lc",
-  authDomain: "descent-a60f2.firebaseapp.com",
-  projectId: "descent-a60f2",
-  storageBucket: "descent-a60f2.appspot.com",
-  messagingSenderId: "965184225429",
-  appId: "1:965184225429:web:9054a69214752774901b9c"
+  apiKey: import.meta.env.VITE_APP_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_APP_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_FIREBASE_APP_ID
 };
 
 if (!firebase.apps.length) {

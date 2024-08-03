@@ -175,6 +175,7 @@ const ProblemPage = () => {
         <div className="problem-column" style={{ minWidth: '300px' }}>
           <Card className="h-100">
             <Card.Body>
+
               <Tabs
                 activeKey={activeTab}
                 onSelect={(k) => setActiveTab(k)}
@@ -186,7 +187,25 @@ const ProblemPage = () => {
                   <Button variant="secondary" onClick={() => setShowSolution(!showSolution)}>
                     {showSolution ? 'Hide Solution' : 'Show Solution'}
                   </Button>
+                  <Button variant="primary" onClick={handleLearnClick}>
+                    {showLearn ? 'Hide Learn' : 'Learn'}
+                  </Button>
                   {showSolution && <SolutionComponent solution={solution} />}
+                  {showLearn && topic == "Neural Networks" && <NeuralNetwork />}
+                  {showLearn && topic != "Neural Networks" && (
+                    <Card className="mt-4">
+                      <Card.Body>
+                        <Canvas 
+                          points={[]}
+                          addPoint={() => {}}
+                          drawExtra={() => {}}
+                          title="Interactive Linear Regression"
+                        >
+                          <LinearRegression />
+                        </Canvas>
+                      </Card.Body>
+                    </Card>
+                  )}
                 </Tab>
                 <Tab eventKey="submissions" title="Your Submissions">
                 {selectedSubmission ? (
