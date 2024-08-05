@@ -208,7 +208,7 @@ const ProblemPage = () => {
                     </Card>
                   )}
                 </Tab>
-                <Tab eventKey="submissions" title="Your Submissions">
+                <Tab eventKey="submissions" title={`Your Submissions (${submissions.length})`}>
                 {selectedSubmission ? (
                   <SubmissionDetails
                     submission={selectedSubmission}
@@ -220,19 +220,19 @@ const ProblemPage = () => {
                     <Table striped bordered hover>
                       <thead>
                         <tr>
-                          <th>ID</th>
+                          <th>#</th>
                           <th>Status</th>
                           <th>Date</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {submissions.map((sub) => (
+                        {submissions.map((sub, index) => (
                           <tr 
                             key={sub.id} 
                             onClick={() => handleSubmissionClick(sub)}
                             style={{ cursor: 'pointer' }}
                           >
-                            <td>{sub.id.slice(-6)}</td>
+                            <td>{index + 1}</td>
                             <td>{getStatusBadge(sub.status)}</td>
                             <td>{new Date(sub.submissionTimestamp).toLocaleString()}</td>
                           </tr>
